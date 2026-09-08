@@ -1,0 +1,208 @@
+{
+  "stage": "pre-seed",
+  "version": "2026-09-08",
+  "scale": { "found": 2, "partial": 1, "absent": 0 },
+  "red_block_threshold_percent": 50,
+  "call_question_block_weight": 3,
+  "confirmation": {
+    "trigger_min_percent": 65,
+    "trigger_max_percent": null,
+    "extra_passes": 2,
+    "rule": "When the first-pass deck completeness is within [trigger_min_percent, trigger_max_percent], run extra_passes more independent checker passes and take, per question, the median value of all passes. A null bound is disabled."
+  },
+  "blocks": [
+    {
+      "id": "A",
+      "name": { "en": "Problem and field", "fr": "Problème et terrain" },
+      "weight": 3,
+      "questions": [
+        {
+          "id": "A1",
+          "question": { "en": "Who suffers from the problem, precisely?", "fr": "Qui souffre du problème, précisément ?" },
+          "found_if": "A nameable profile: \"purchasing manager in an industrial SME of 50 to 200 people\", not \"companies\".",
+          "note": ""
+        },
+        {
+          "id": "A2",
+          "question": { "en": "How much does the problem cost this person today?", "fr": "Combien le problème coûte à cette personne aujourd'hui ?" },
+          "found_if": "A cost in time, money or risk, with a source or a testimony.",
+          "note": "Partial accepted if the order of magnitude is argued."
+        },
+        {
+          "id": "A3",
+          "question": { "en": "How does this person cope today without the product?", "fr": "Comment elle se débrouille aujourd'hui sans le produit ?" },
+          "found_if": "The real competitor is named, including Excel, an intern or \"we do nothing\".",
+          "note": "A deck that says \"no competitor\" is partial at best."
+        },
+        {
+          "id": "A4",
+          "question": { "en": "How many users did the founder interview, and what do they say?", "fr": "Combien d'utilisateurs le fondateur a interviewés, et que disent-ils ?" },
+          "found_if": "A number and at least one verbatim quote.",
+          "note": "The central question of the stage. Absent = main red signal.",
+          "red_flag_if_absent": true
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": { "en": "Evidence", "fr": "Preuves" },
+      "weight": 3,
+      "questions": [
+        {
+          "id": "B1",
+          "question": { "en": "Does the product exist?", "fr": "Le produit existe-t-il ?" },
+          "found_if": "Three levels to distinguish: nothing, mockup, prototype used by real people. Found only at the third.",
+          "note": "Mockup = partial."
+        },
+        {
+          "id": "B2",
+          "question": { "en": "What weak signals of interest?", "fr": "Quels signaux faibles d'intérêt ?" },
+          "found_if": "A quantified waiting list, named letters of intent, pilots under way, first payments even tiny.",
+          "note": "A first payment of 50 euros is worth more than a waiting list of 2,000 emails."
+        },
+        {
+          "id": "B3",
+          "question": { "en": "Named customers or pilots?", "fr": "Des clients ou pilotes nommés ?" },
+          "found_if": "Names of companies or people, not blurry logos or \"large accounts\".",
+          "note": "Weight reduced to 1 if the sector is B2C.",
+          "weight_if_b2c": 1
+        },
+        {
+          "id": "B4",
+          "question": { "en": "What was tested and abandoned?", "fr": "Qu'est-ce qui a été testé et abandonné ?" },
+          "found_if": "A pivot, an invalidated hypothesis, a removed feature, with what triggered it.",
+          "note": "A deck with nothing abandoned is a deck without field work. Absent = red.",
+          "red_flag_if_absent": true
+        },
+        {
+          "id": "B5",
+          "question": { "en": "What has the team done in the last six months?", "fr": "Qu'a fait l'équipe depuis six mois ?" },
+          "found_if": "Past, dated actions, not intentions.",
+          "note": "Count the \"we did\" against the \"we will\". Absent = red.",
+          "red_flag_if_absent": true
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": { "en": "Economics", "fr": "Économie" },
+      "weight": 1,
+      "questions": [
+        {
+          "id": "C1",
+          "question": { "en": "What price, and tested on whom?", "fr": "Quel prix, et testé sur qui ?" },
+          "found_if": "A price and the proof that it was offered to real prospects, with their reaction.",
+          "note": "A price out of a spreadsheet = partial."
+        },
+        {
+          "id": "C2",
+          "question": { "en": "Who pays, and is it the same person as the one who suffers?", "fr": "Qui paie, et est-ce la même personne que celle qui souffre ?" },
+          "found_if": "The payer is identified, and the gap with the user is explained if there is one.",
+          "note": "Frequent in B2B: the user is not the decision-maker."
+        },
+        {
+          "id": "C3",
+          "question": { "en": "Margin, acquisition cost, retention?", "fr": "Marge, coût d'acquisition, rétention ?" },
+          "found_if": "A sourced figure.",
+          "note": "Weight 0. Asked for information, almost always absent at this stage and that is not a signal.",
+          "weight": 0
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": { "en": "Market and timing", "fr": "Marché et moment" },
+      "weight": 2,
+      "questions": [
+        {
+          "id": "D1",
+          "question": { "en": "Market size computed bottom-up?", "fr": "Taille du marché calculée par le bas ?" },
+          "found_if": "Number of possible customers multiplied by a price, with visible assumptions.",
+          "note": "A Gartner figure or \"a 40 billion market\" = absent, not partial."
+        },
+        {
+          "id": "D2",
+          "question": { "en": "Why now?", "fr": "Pourquoi maintenant ?" },
+          "found_if": "A recent, named change: regulation, technology, behaviour, a cost that dropped.",
+          "note": "Absent = the deck does not say why this does not exist already."
+        },
+        {
+          "id": "D3",
+          "question": { "en": "Why is it not already done by an incumbent?", "fr": "Pourquoi ce n'est pas déjà fait par un acteur en place ?" },
+          "found_if": "A structural reason, not \"they are slow\".",
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": { "en": "Team", "fr": "Équipe" },
+      "weight": 3,
+      "questions": [
+        {
+          "id": "E1",
+          "question": { "en": "Who did what, concretely, before?", "fr": "Qui a fait quoi, concrètement, avant ?" },
+          "found_if": "Verifiable achievements, not titles. \"Built X used by Y people\".",
+          "note": "\"Ex-Google\" without role or result = partial."
+        },
+        {
+          "id": "E2",
+          "question": { "en": "What link between the founders and the problem?", "fr": "Quel lien entre les fondateurs et le problème ?" },
+          "found_if": "They lived it, or they spent identifiable time with those who live it.",
+          "note": ""
+        },
+        {
+          "id": "E3",
+          "question": { "en": "Full-time or not?", "fr": "Temps plein ou pas ?" },
+          "found_if": "Stated explicitly for each founder.",
+          "note": "Not stated = absent. Part-time explained and dated = partial."
+        },
+        {
+          "id": "E4",
+          "question": { "en": "Equity split between founders?", "fr": "Répartition des parts entre fondateurs ?" },
+          "found_if": "Percentages are given, or the deck says they are available.",
+          "note": "A very unbalanced split or a founder who left with shares is a question for the call, not a verdict."
+        },
+        {
+          "id": "E5",
+          "question": { "en": "Do the skills cover product, tech and sales?", "fr": "Les compétences couvrent-elles produit, technique et vente ?" },
+          "found_if": "Each founder is tied to a role, and any gap is named with a plan.",
+          "note": "A named gap is worth more than a hidden gap."
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": { "en": "Money and next step", "fr": "Argent et prochaine étape" },
+      "weight": 2,
+      "questions": [
+        {
+          "id": "F1",
+          "question": { "en": "How much is asked, and what for?", "fr": "Combien est demandé, et à quoi ça sert ?" },
+          "found_if": "An amount and a breakdown, even rough.",
+          "note": ""
+        },
+        {
+          "id": "F2",
+          "question": { "en": "What proof must the company obtain before the next round?", "fr": "Quelle preuve la boîte doit obtenir avant le tour suivant ?" },
+          "found_if": "A measurable, dated goal: \"20 paying customers within 12 months\".",
+          "note": "The question that replaces runway. Absent = the money has no purpose.",
+          "red_flag_if_absent": true
+        },
+        {
+          "id": "F3",
+          "question": { "en": "Does the amount allow reaching that proof?", "fr": "Le montant permet-il d'atteindre cette preuve ?" },
+          "found_if": "The link between F1 and F2 is made, with a duration.",
+          "note": "Only assessed if F1 and F2 are found.",
+          "requires_found": ["F1", "F2"]
+        },
+        {
+          "id": "F4",
+          "question": { "en": "Who already put money in?", "fr": "Qui a déjà mis de l'argent ?" },
+          "found_if": "Names or categories (founders, relatives, business angels, grant), amounts.",
+          "note": "Founders who put nothing in themselves: a question for the call."
+        }
+      ]
+    }
+  ]
+}

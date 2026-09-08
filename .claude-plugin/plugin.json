@@ -1,0 +1,9 @@
+{
+  "name": "preseed-deck-reader",
+  "version": "0.1.0",
+  "description": "Reads a PRE-SEED pitch deck (PDF) and writes a deck-completeness report next to it, using a fixed pre-seed grid. Pre-seed only: other stages are refused. No verdict, no investment recommendation.",
+  "author": {
+    "name": "Valentin Monteiro"
+  },
+  "keywords": ["pitch-deck", "pre-seed", "due-diligence", "completeness", "investor"]
+}
