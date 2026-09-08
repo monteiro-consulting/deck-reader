@@ -57,8 +57,8 @@ LABELS = {
         "not_assessable": "not assessable",
         "information_only": "for information",
         "quote_rejected": "quote rejected by verification",
-        "passes_one": "Checker passes: 1 (completeness below the confirmation threshold of {threshold} %)",
-        "passes_many": "Checker passes: {n} (confirmation triggered at {threshold} % completeness; each value is the median of the passes)",
+        "passes_one": "Checker passes: 1 (completeness outside the confirmation band {threshold} %)",
+        "passes_many": "Checker passes: {n} (confirmation triggered, completeness within {threshold} %; each value is the median of the passes)",
         "unstable": "unstable",
         "unstable_note": "Unstable questions (passes disagreed)",
         "abort_title": "Deck not read",
@@ -104,8 +104,8 @@ LABELS = {
         "not_assessable": "non évaluable",
         "information_only": "pour information",
         "quote_rejected": "extrait rejeté à la vérification",
-        "passes_one": "Passes de vérification : 1 (complétude sous le seuil de confirmation de {threshold} %)",
-        "passes_many": "Passes de vérification : {n} (confirmation déclenchée à {threshold} % de complétude ; chaque valeur est la médiane des passes)",
+        "passes_one": "Passes de vérification : 1 (complétude hors de la bande de confirmation {threshold} %)",
+        "passes_many": "Passes de vérification : {n} (confirmation déclenchée, complétude dans la bande {threshold} % ; chaque valeur est la médiane des passes)",
         "unstable": "instable",
         "unstable_note": "Questions instables (les passes ont divergé)",
         "abort_title": "Deck non lu",
@@ -199,7 +199,9 @@ def completeness_section(lab, grid, score, lang):
     if conf:
         lines.append("")
         key = "passes_many" if n_passes > 1 else "passes_one"
-        lines.append(lab[key].format(n=n_passes, threshold=conf.get("trigger_min_percent")))
+        lo, hi = conf.get("trigger_min_percent"), conf.get("trigger_max_percent")
+        band = f"{lo}-{hi}" if lo is not None and hi is not None else (f">= {lo}" if lo is not None else f"<= {hi}")
+        lines.append(lab[key].format(n=n_passes, threshold=band))
         if score.get("unstable"):
             lines.append("")
             lines.append(f"**{lab['unstable_note']}**: {', '.join(score['unstable'])}")

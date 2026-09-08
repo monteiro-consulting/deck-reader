@@ -137,11 +137,11 @@ Implementation rules, fixed with the grid:
 - B3 counts with weight 1 instead of the block weight when the profile says B2C.
 - A block is **red** when its completeness is below 50 %.
 - **Confirmation passes.** A model's reading of a criterion is not perfectly stable between
-  runs on borderline questions. When the first-pass deck completeness is at or above 65 % (upper
-  bound disabled by default), two more independent checker passes are run and each question
+  runs on borderline questions. When the first-pass deck completeness is between 65 % and 80 %
+  inclusive, two more independent checker passes are run and each question
   takes the median of the three values: 1,2,2 gives 2; 1,1,2 gives 1; 0,1,2 gives 1. Questions
-  whose passes disagree are marked unstable in the report, with the three readings. Below the
-  threshold, the single pass stands. The threshold is about the completeness of the deck, never
+  whose passes disagree are marked unstable in the report, with the three readings. Outside that
+  band, below 65 % or above 80 %, the single pass stands. The threshold is about the completeness of the deck, never
   about the company.
 
 ---

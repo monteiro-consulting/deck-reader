@@ -31,7 +31,7 @@
 
 **Signaux rouges du stade (absents)**: B4
 
-Passes de vérification : 3 (confirmation déclenchée à 65 % de complétude ; chaque valeur est la médiane des passes)
+Passes de vérification : 3 (confirmation déclenchée, complétude dans la bande 65-80 % ; chaque valeur est la médiane des passes)
 
 **Questions instables (les passes ont divergé)**: A2
 

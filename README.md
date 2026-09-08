@@ -33,7 +33,7 @@ Four isolated steps, so that the model never fills a gap with something it saw e
 | 1. Read | PDF text layer extracted by code; pages transcribed by a model into raw JSON | `pdf_text.py`, `preseed-page-transcriber` |
 | 2. Profile | Sector, business model, B2B or B2C, announced stage, each with a quote. Not pre-seed: stop | `preseed-deck-profiler` |
 | 3. Grid | Six checkers in parallel, one per block, each sees only its own questions. One question at a time. Every quote is verified by code against the cited page; rejected quotes are retried twice, then marked absent | `preseed-block-checker` × 6, `verify_quotes.py` |
-| 3b. Confirmation | If the first-pass completeness is at or above 65 %, two more independent checker passes run and each question takes the median of the three values (1,2,2 gives 2; 1,1,2 gives 1). Disagreements are marked unstable in the report | `consolidate.py`, `preseed-block-checker` × 12 |
+| 3b. Confirmation | If the first-pass completeness is between 65 % and 80 %, two more independent checker passes run and each question takes the median of the three values (1,2,2 gives 2; 1,1,2 gives 1). Disagreements are marked unstable in the report | `consolidate.py`, `preseed-block-checker` × 12 |
 | 4. Reading | Completeness computed by code from the weights; the writer sees only the 24 answers, never the deck nor the score | `score.py`, `preseed-report-writer`, `report.py` |
 
 The grid (24 questions, 6 blocks, weights) is fixed: [`skills/preseed-deck-reader/grid.md`](skills/preseed-deck-reader/grid.md)
@@ -88,8 +88,8 @@ python -m unittest discover -s tests
   two consecutive runs disagreed on 4 of 24 questions (A2, C1, D3, E2), always between adjacent
   values (found/partial or partial/absent), never on the quotes. The quotes are verified by
   code; the values are a model's reading of a fixed criterion. The confirmation passes exist for
-  this reason: above the threshold, three independent readings vote and the report shows where
-  they disagreed. Below it, the single pass stands and this variance is not measured.
+  this reason: inside the 65-80 % band, three independent readings vote and the report shows
+  where they disagreed. Outside it, the single pass stands and this variance is not measured.
 - The confirmation threshold and the number of extra passes live in `scripts/grid.json` under
   `confirmation`. They are about deck completeness, never about the company.
 - The grid cannot tell a founder who presents poorly from a founder who did nothing. That is the
