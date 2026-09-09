@@ -1,4 +1,4 @@
-"""Tests for scripts/score.py: deck completeness from the 24 answers and the grid weights."""
+"""Tests for scripts/score.py: deck completeness from the 24 pre-seed answers and the grid weights."""
 import json
 import os
 import sys
@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
 
 import score  # noqa: E402
 
-with open(os.path.join(HERE, "..", "scripts", "grid.json"), encoding="utf-8") as f:
+with open(os.path.join(HERE, "..", "scripts", "grids", "preseed.json"), encoding="utf-8") as f:
     GRID = json.load(f)
 
 ALL_IDS = [q["id"] for b in GRID["blocks"] for q in b["questions"]]

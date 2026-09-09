@@ -1,9 +1,9 @@
 {
-  "name": "preseed-deck-reader",
-  "version": "0.1.0",
-  "description": "Reads a PRE-SEED pitch deck (PDF) and writes a deck-completeness report next to it, using a fixed pre-seed grid. Pre-seed only: other stages are refused. No verdict, no investment recommendation.",
+  "name": "deck-reader",
+  "version": "0.2.0",
+  "description": "Reads a pitch deck (PDF) and writes a deck-completeness report next to it, with the grid of the stage the deck announces. Pre-seed: completeness of the deck. Seed: completeness, plus every figure the deck states checked against the annexes provided and public sources, and a draft email to the founder for what is missing. No verdict, no investment recommendation.",
   "author": {
     "name": "Valentin Monteiro"
   },
-  "keywords": ["pitch-deck", "pre-seed", "due-diligence", "completeness", "investor"]
+  "keywords": ["pitch-deck", "pre-seed", "seed", "due-diligence", "completeness", "investor"]
 }

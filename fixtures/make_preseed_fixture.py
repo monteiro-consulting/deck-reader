@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Generate fixtures/fictional-preseed-deck.pdf, a 12-page FICTIONAL pre-seed deck.
+"""Generate fixtures/preseed-deck.pdf, a 12-page FICTIONAL pre-seed deck.
 
 Standard library only (a minimal PDF writer, Helvetica, WinAnsi, Flate streams).
 Every name, figure and person is invented. The deck has deliberate gaps so that the
 reader has something to find missing. Expected grid outcome is listed at the bottom.
 
-Run:  python fixtures/make_fixture.py
+Run:  python fixtures/make_preseed_fixture.py
 """
 import os
 import textwrap
 import zlib
 
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fictional-preseed-deck.pdf")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "preseed-deck.pdf")
 
-FOOTER = "FICTIONAL DECK - generated for testing preseed-deck-reader. All names, figures and people are invented."
+FOOTER = "FICTIONAL DECK - generated for testing deck-reader. All names, figures and people are invented."
 
 # Each page: (title, [paragraphs]). Empty string = blank line.
 PAGES = [

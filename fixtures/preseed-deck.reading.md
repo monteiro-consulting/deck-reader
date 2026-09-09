@@ -1,4 +1,4 @@
-# Lecture de complétude du deck: fictional-preseed-deck.pdf
+# Lecture de complétude du deck: preseed-deck.pdf
 
 **Stade**: pre-seed · **Version de la grille**: 2026-09-08 · **Lu le**: 2026-09-08 · **Extraits vérifiés contre**: la couche texte du PDF
 

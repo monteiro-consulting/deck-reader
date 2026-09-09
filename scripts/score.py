@@ -4,15 +4,19 @@
 Standard library only. No model sees or computes this score.
 
 Usage:
-    score.py --grid grid.json --answers-dir DIR --profile profile.json --out score.json
+    score.py --grid GRID --answers-dir DIR --profile profile.json --out score.json
 
-Rules (fixed with the grid, see grid.md "The computation"):
+--grid is a stage name (preseed, seed) or a path. The model-specific questions of the
+profile (grid_lib.effective_grid) are included, so a marketplace deck is scored on them too.
+
+Rules (fixed with the grid, see grids/<stage>.md "The computation"):
     per question   points = value(0/1/2) x weight (block weight, or the question's own weight)
     per block      percent = points / max, max = sum of 2 x weight over counted questions
     global         mean of block percents weighted by block weight
     C3 (weight 0)  not counted
     F3             not_assessable and not counted when F1 or F2 is not "found"
-    B3             weight 1 instead of the block weight when the profile says B2C
+    weight_if_b2c  a question's weight when the profile says B2C (pre-seed B3: 1, seed C4: 0)
+    capped         a seed answer capped to partial by apply_proof_cap.py is scored as partial
     red block      percent strictly below the grid threshold (50)
     call questions absent or partial questions in blocks of weight 3
 
@@ -23,6 +27,8 @@ import glob
 import json
 import os
 import sys
+
+from grid_lib import effective_grid, load_grid
 
 
 class ScoreError(Exception):
@@ -121,6 +127,7 @@ def compute(grid, answers, profile):
     confirmation_due = passes == 1 and bool(conf) and (lo is None or global_percent >= lo) and (hi is None or global_percent <= hi)
 
     return {
+        "applied_model_questions": grid.get("applied_model_questions", ""),
         "passes": passes,
         "unstable": unstable,
         "confirmation_due": confirmation_due,
@@ -148,16 +155,15 @@ def load_answers(answers_dir):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--grid", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "grid.json"))
+    ap.add_argument("--grid", required=True, help="stage name or path")
     ap.add_argument("--answers-dir", required=True)
     ap.add_argument("--profile", required=True)
     ap.add_argument("--out", required=True)
     args = ap.parse_args(argv)
 
-    with open(args.grid, encoding="utf-8") as f:
-        grid = json.load(f)
     with open(args.profile, encoding="utf-8") as f:
         profile = json.load(f)
+    grid = effective_grid(load_grid(args.grid), profile)
     answers = load_answers(args.answers_dir)
     try:
         result = compute(grid, answers, profile)

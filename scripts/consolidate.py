@@ -19,6 +19,7 @@ Rule, per question
     evidence, missing, call_question = taken from the first pass whose value equals the
                consolidated value, so the quote shown always supports the value shown.
     quote_invalid = true when the chosen pass had its quote rejected (its value is absent).
+    claim_ids, capped, downgraded, downgraded_by = carried over from the chosen pass (seed).
 """
 import argparse
 import glob
@@ -76,6 +77,10 @@ def consolidate_answers(passes):
         }
         if source.get("quote_invalid"):
             out["quote_invalid"] = True
+        # Seed markers set by apply_proof_cap.py travel with the chosen pass.
+        for key in ("claim_ids", "capped", "downgraded", "downgraded_by"):
+            if key in source:
+                out[key] = source[key]
         merged.append(out)
     return merged
 

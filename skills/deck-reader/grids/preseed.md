@@ -3,13 +3,13 @@
 **Grid version: 2026-09-08. Stage covered: pre-seed only.**
 
 This file is a fixed copy of the grid. It does not change at run time. The machine-readable
-version used by the scripts is `scripts/grid.json`; both must stay identical.
+version used by the scripts is `scripts/grids/preseed.json`; both must stay identical.
 
-**A deck is scored according to its stage.** This reader only scores pre-seed decks, with a grid
-and weights made for pre-seed. A seed or series A deck is not scored with this grid: it would ask
-for figures a pre-seed company does not have yet, or excuse absences a series A cannot afford.
-One reader per stage, never one grid for all. If the deck announces another stage, the grid does
-not apply, the tool stops and says so.
+**A deck is scored according to its stage.** This grid only scores pre-seed decks, with
+questions and weights made for pre-seed. A seed deck is not scored with it: it would excuse
+absences a seed company cannot afford. One grid per stage, never one grid for all; the deck's
+announced stage picks the grid (`seed.md` for seed). No grid for the announced stage: the tool
+stops and says so.
 
 **What the grid measures**: the completeness of the deck, that is, how well it answers the
 questions an investor will ask. It does not measure the quality of the company. A complete deck

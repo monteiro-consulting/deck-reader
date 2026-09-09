@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(HERE, "..", "scripts"))
 sys.path.insert(0, os.path.join(HERE, "..", "fixtures"))
 
 import pdf_text  # noqa: E402
-import make_fixture  # noqa: E402
+import make_preseed_fixture as make_fixture  # noqa: E402
 
 
 class PdfTextTest(unittest.TestCase):

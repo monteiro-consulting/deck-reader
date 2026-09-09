@@ -1,6 +1,6 @@
 ---
-name: preseed-page-transcriber
-description: Transcribes a pitch deck PDF page by page into raw JSON (page number, title, text, figures, claims). Transcribes, never interprets. Used by the preseed-deck-reader skill, step 1.
+name: page-transcriber
+description: Transcribes a pitch deck PDF page by page into raw JSON (page number, title, text, figures, claims). Transcribes, never interprets. Used by the deck-reader skill, step 1, for every stage.
 model: sonnet
 tools: Read, Write
 ---

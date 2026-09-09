@@ -1,0 +1,334 @@
+{
+  "stage": "seed",
+  "version": "2026-09-09",
+  "scale": {
+    "found": 2,
+    "partial": 1,
+    "absent": 0
+  },
+  "red_block_threshold_percent": 50,
+  "call_question_block_weight": 3,
+  "confirmation": {
+    "trigger_min_percent": 65,
+    "trigger_max_percent": 80,
+    "extra_passes": 2,
+    "rule": "When the first-pass deck completeness is within [trigger_min_percent, trigger_max_percent], run extra_passes more independent checker passes and take, per question, the median value of all passes. A null bound is disabled."
+  },
+  "proof": {
+    "rule": "A question marked requires_proof cannot be 'found' from the deck alone. The checker must cite at least one claim whose status is proven (annex) or confirmed (web); otherwise the code caps the value at 'partial'. A question citing a claim left as 'to_probe' after review is lowered by one step.",
+    "cap_value": "partial"
+  },
+  "annex_gate": {
+    "rule": "No annex: stop, generic email. Annexes present: the key claim types the deck makes (revenue, customers, retention) must be covered by at least one proven claim in a proportion of min_key_coverage; below that, stop and email the precise list. At or above it, continue and list what is still missing in the report.",
+    "key_claim_types": ["revenue", "customers", "retention"],
+    "min_key_coverage": 0.5
+  },
+  "gaps": {
+    "rule": "A gap between a deck figure and the figure found in an annex or on the web is classified by code. Ratio = |deck - found| / max(|found|, 1). minor: ratio <= minor_max_ratio, noted, no penalty. to_probe: ratio <= probe_max_ratio, becomes a question for the call. blatant: above, or the fact does not exist; goes to the reviewer, then stops the reading if no honest explanation is found. Non-numeric contradictions (a named customer that does not exist, a founder who never worked there) are blatant by default.",
+    "minor_max_ratio": 0.25,
+    "probe_max_ratio": 1.0
+  },
+  "web": {
+    "rule": "A claim is confirmed or contradicted on the web only with at least min_independent_sources sources on distinct domains, after searching both for and against. Otherwise it is unverifiable, which is a valid state, never 'probably false'.",
+    "min_independent_sources": 2,
+    "claim_types": ["named_customer", "competitor", "founder", "funding", "why_now", "market"]
+  },
+  "claim_types": {
+    "revenue": {"check": "annex", "proof": "revenue export (Stripe, invoices, bank statement)"},
+    "customers": {"check": "annex", "proof": "customer list with first payment dates"},
+    "retention": {"check": "annex", "proof": "cohort table or analytics export"},
+    "churn": {"check": "annex", "proof": "churned customer list with reasons"},
+    "acquisition": {"check": "annex", "proof": "marketing spend and CRM export"},
+    "pricing": {"check": "annex", "proof": "revenue export showing the price paid"},
+    "runway": {"check": "annex", "proof": "financial model or bank statement"},
+    "cap_table": {"check": "annex", "proof": "cap table"},
+    "named_customer": {"check": "web", "proof": "customer website, LinkedIn, public testimonial"},
+    "competitor": {"check": "web", "proof": "competitor websites"},
+    "founder": {"check": "web", "proof": "LinkedIn profile, public track record"},
+    "funding": {"check": "both", "proof": "cap table, press, registry"},
+    "why_now": {"check": "web", "proof": "regulation text, press, public data"},
+    "market": {"check": "web", "proof": "public data behind the bottom-up figures"},
+    "other": {"check": "none", "proof": ""}
+  },
+  "model_questions": {
+    "marketplace": {
+      "block": "B",
+      "questions": [
+        {
+          "id": "M1",
+          "question": {"en": "Gross merchandise value and take rate?", "fr": "Volume d'affaires (GMV) et take rate ?"},
+          "found_if": "Both figures, and the net revenue that follows from them.",
+          "note": "From a16z's marketplace metrics.",
+          "requires_proof": true,
+          "claim_types": ["revenue"]
+        },
+        {
+          "id": "M2",
+          "question": {"en": "Match rate and time to match?", "fr": "Taux de match et temps de match ?"},
+          "found_if": "Share of requests served, and the delay.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["retention"]
+        },
+        {
+          "id": "M3",
+          "question": {"en": "Concentration?", "fr": "Concentration ?"},
+          "found_if": "Share of volume made by the top 10 sellers or buyers.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["customers"]
+        },
+        {
+          "id": "M4",
+          "question": {"en": "Do both sides come back?", "fr": "Les deux côtés reviennent-ils ?"},
+          "found_if": "Retention figures for supply and demand, separately.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["retention"]
+        }
+      ]
+    }
+  },
+  "blocks": [
+    {
+      "id": "A",
+      "name": {"en": "Problem and customer", "fr": "Problème et client"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "A1",
+          "question": {"en": "Who is the paying customer, precisely?", "fr": "Qui est le client qui paie, précisément ?"},
+          "found_if": "A nameable profile, and at least one real customer that matches it.",
+          "note": "",
+          "claim_types": ["customers", "named_customer"]
+        },
+        {
+          "id": "A2",
+          "question": {"en": "Why do they buy, in their own words?", "fr": "Pourquoi il achète, dans ses mots ?"},
+          "found_if": "A customer quote or a documented use case.",
+          "note": ""
+        },
+        {
+          "id": "A3",
+          "question": {"en": "What changed since the start?", "fr": "Qu'est-ce qui a changé depuis le début ?"},
+          "found_if": "A pivot or an invalidated hypothesis, dated.",
+          "note": "Nothing abandoned in two years = partial at best."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": {"en": "Traction", "fr": "Traction"},
+      "weight": 3,
+      "questions": [
+        {
+          "id": "B1",
+          "question": {"en": "How many paying customers, since when?", "fr": "Combien de clients payants, depuis quand ?"},
+          "found_if": "A number and a first payment date, backed by an annex or the web.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["customers"]
+        },
+        {
+          "id": "B2",
+          "question": {"en": "Monthly revenue and its curve?", "fr": "Revenus mensuels et courbe ?"},
+          "found_if": "An MRR or equivalent over at least 3 months, with the data points, not only the last one.",
+          "note": "A growth percentage without the starting point = absent.",
+          "requires_proof": true,
+          "claim_types": ["revenue"]
+        },
+        {
+          "id": "B3",
+          "question": {"en": "Do customers come back?", "fr": "Est-ce que les clients reviennent ?"},
+          "found_if": "A retention figure: cohorts, churn, recurring usage.",
+          "note": "A cohort that flattens after week 8 is the signal seed funds look for.",
+          "requires_proof": true,
+          "claim_types": ["retention"]
+        },
+        {
+          "id": "B4",
+          "question": {"en": "Do the named customers exist and really use the product?", "fr": "Les clients nommés existent-ils et utilisent-ils vraiment le produit ?"},
+          "found_if": "Confirmed outside the deck: website, LinkedIn, public testimonial, or an annex.",
+          "note": "The central question of the stage. Cannot be found from the deck alone.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "claim_types": ["named_customer"]
+        },
+        {
+          "id": "B5",
+          "question": {"en": "How many customers lost, and why?", "fr": "Combien de clients perdus, et pourquoi ?"},
+          "found_if": "A figure and a reason.",
+          "note": "Absent = the deck hides churn. Red.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "claim_types": ["churn"]
+        },
+        {
+          "id": "B6",
+          "question": {"en": "Where do customers come from?", "fr": "D'où viennent les clients ?"},
+          "found_if": "A named channel with its share, and the share of organic or word of mouth.",
+          "note": "All paid = partial.",
+          "requires_proof": true,
+          "claim_types": ["acquisition"]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": {"en": "Economics", "fr": "Économie"},
+      "weight": 3,
+      "questions": [
+        {
+          "id": "C1",
+          "question": {"en": "What price, paid by whom, since when?", "fr": "Quel prix, payé par qui, depuis combien de temps ?"},
+          "found_if": "A price actually collected.",
+          "note": "A price list without a payment = partial.",
+          "requires_proof": true,
+          "claim_types": ["pricing", "revenue"]
+        },
+        {
+          "id": "C2",
+          "question": {"en": "Customer acquisition cost?", "fr": "Coût d'acquisition d'un client ?"},
+          "found_if": "A figure with the method, even on 10 customers.",
+          "note": "Show the model benchmark with the caveat 'small sample'.",
+          "requires_proof": true,
+          "claim_types": ["acquisition"]
+        },
+        {
+          "id": "C3",
+          "question": {"en": "Gross margin per customer?", "fr": "Marge brute par client ?"},
+          "found_if": "A figure. Estimated without a basis = partial.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["revenue"]
+        },
+        {
+          "id": "C4",
+          "question": {"en": "Sales cycle?", "fr": "Cycle de vente ?"},
+          "found_if": "An average duration from first contact to payment.",
+          "note": "B2B only. Weight 0 in B2C.",
+          "requires_proof": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["acquisition"]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": {"en": "Market and competition", "fr": "Marché et concurrence"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "D1",
+          "question": {"en": "Market size computed bottom-up?", "fr": "Taille du marché par le bas ?"},
+          "found_if": "Possible customers multiplied by the observed price, with visible assumptions.",
+          "note": "An analyst figure = absent.",
+          "claim_types": ["market"]
+        },
+        {
+          "id": "D2",
+          "question": {"en": "Who are the competitors, and where are they better?", "fr": "Qui sont les concurrents, et où sont-ils meilleurs ?"},
+          "found_if": "Named, with one point where they win.",
+          "note": "Web check: omitted competitors become a contradiction.",
+          "claim_types": ["competitor"]
+        },
+        {
+          "id": "D3",
+          "question": {"en": "Why now?", "fr": "Pourquoi maintenant ?"},
+          "found_if": "A recent, named, verifiable change.",
+          "note": "",
+          "claim_types": ["why_now"]
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": {"en": "Team", "fr": "Équipe"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "E1",
+          "question": {"en": "Who did what before, verifiably?", "fr": "Qui a fait quoi avant, vérifiable ?"},
+          "found_if": "Named achievements, confirmed on LinkedIn or elsewhere.",
+          "note": "A title without a result = partial.",
+          "requires_proof": true,
+          "claim_types": ["founder"]
+        },
+        {
+          "id": "E2",
+          "question": {"en": "Who was hired since, and for what?", "fr": "Qui a été recruté depuis, et pour quoi ?"},
+          "found_if": "Names and roles.",
+          "note": "Absent = the previous money did not go into the team.",
+          "claim_types": ["founder"]
+        },
+        {
+          "id": "E3",
+          "question": {"en": "Full-time, and equity split?", "fr": "Temps plein et répartition des parts ?"},
+          "found_if": "Stated for each founder.",
+          "note": "",
+          "claim_types": ["cap_table"]
+        },
+        {
+          "id": "E4",
+          "question": {"en": "Who is missing to reach series A?", "fr": "Qui manque pour passer la série A ?"},
+          "found_if": "A named gap with a hiring plan.",
+          "note": "A named gap is worth more than a hidden gap."
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": {"en": "Money and next step", "fr": "Argent et prochaine étape"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "F1",
+          "question": {"en": "How much is asked, and what for?", "fr": "Combien demandé, à quoi ça sert ?"},
+          "found_if": "An amount and a breakdown.",
+          "note": ""
+        },
+        {
+          "id": "F2",
+          "question": {"en": "What figures must be reached for series A?", "fr": "Quels chiffres à atteindre pour la série A ?"},
+          "found_if": "A measurable, dated goal: MRR, customers, retention.",
+          "note": "Absent = the money has no purpose.",
+          "red_flag_if_absent": true
+        },
+        {
+          "id": "F3",
+          "question": {"en": "How many months of runway?", "fr": "Combien de mois de runway ?"},
+          "found_if": "A monthly burn and a duration.",
+          "note": "12 to 18 months with named milestones is what funds expect.",
+          "requires_proof": true,
+          "claim_types": ["runway"]
+        },
+        {
+          "id": "F4",
+          "question": {"en": "Who already invested, and do they follow on?", "fr": "Qui a déjà investi, et remet-il au pot ?"},
+          "found_if": "Names, amounts, and whether existing investors follow on.",
+          "note": "Existing investors who do not follow on: a question for the call.",
+          "claim_types": ["funding"]
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "name": {"en": "References", "fr": "Références"},
+      "weight": 1,
+      "questions": [
+        {
+          "id": "G1",
+          "question": {"en": "Customers we can call?", "fr": "Des clients qu'on peut appeler ?"},
+          "found_if": "Names and a way to contact them, or the deck says they are available.",
+          "note": ""
+        },
+        {
+          "id": "G2",
+          "question": {"en": "Former colleagues or investors we can call?", "fr": "Des anciens collègues ou investisseurs qu'on peut appeler ?"},
+          "found_if": "Same.",
+          "note": "Asked to prepare the call, not to judge the deck."
+        }
+      ]
+    }
+  ]
+}
