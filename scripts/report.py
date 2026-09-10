@@ -485,6 +485,7 @@ def main(argv=None):
     ap.add_argument("--abort-kind", default=None, choices=["stage", "no_annexes", "insufficient_annexes", "contradiction"])
     ap.add_argument("--abort-reason", default=None)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--no-pdf", action="store_true", help="skip the PDF rendered next to --out")
     args = ap.parse_args(argv)
 
     lab = L(args.lang)
@@ -513,6 +514,13 @@ def main(argv=None):
     with open(args.out, "w", encoding="utf-8") as f:
         f.write(text)
     print(args.out)
+    if not args.no_pdf:
+        # The same reading as a PDF, next to the markdown: nothing added, nothing inferred.
+        import report_pdf
+        pdf_path = (args.out[:-3] if args.out.lower().endswith(".md") else args.out) + ".pdf"
+        with open(pdf_path, "wb") as f:
+            f.write(report_pdf.render(text, os.path.basename(args.out)))
+        print(pdf_path)
     return 0
 
 

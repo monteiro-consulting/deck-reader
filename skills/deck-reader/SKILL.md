@@ -25,7 +25,8 @@ Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Agents are the plugin's own
 3. `LANG` = the language for the report: the language the user writes in, or the default
    language set by their instructions, else `en`. ISO 639-1 code. Labels exist for `en` and `fr`;
    any other code gets English labels and the writers' prose in `LANG`.
-4. `OUT` = `<same folder as DECK>/<deck file name without .pdf>.reading.md`.
+4. `OUT` = `<same folder as DECK>/<deck file name without .pdf>.reading.md`. `report.py` also
+   writes the same reading as `<...>.reading.pdf` next to it (`--no-pdf` to skip).
    `EMAIL` = `<same folder as DECK>/<deck file name without .pdf>.founder-email.md`.
 
 ## 1. Read (every stage)
@@ -179,9 +180,9 @@ Read `confirmation_due` and `extra_passes` from its output line.
 
 ## 9. Finish
 
-1. Unless `--keep-work` was given, delete `WORK`. Nothing persists outside `OUT` and, at seed
-   when something is missing, `EMAIL`.
-2. Tell the user, in their language: the report path; the stage and grid used; the block
+1. Unless `--keep-work` was given, delete `WORK`. Nothing persists outside `OUT`, its PDF twin
+   and, at seed when something is missing, `EMAIL`.
+2. Tell the user, in their language: the report paths (markdown and PDF); the stage and grid used; the block
    percentages and the global as printed by `score.py`; the red blocks; the number of passes and
    the unstable questions; how many quotes were rejected; at seed, how many claims were proven,
    confirmed, not covered, unverifiable, to probe, and whether an email draft was written and

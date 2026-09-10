@@ -25,8 +25,8 @@ refused with a one-line explanation. Never one grid for all.
 /deck-reader path/to/deck.pdf --annex revenue.csv --annex cohorts.xlsx --annex model.pdf
 ```
 
-Output: `path/to/deck.reading.md`, and at seed, when documents are missing,
-`path/to/deck.founder-email.md`. Add `--keep-work` to keep the intermediate files in a
+Output: `path/to/deck.reading.md` and the same reading as `path/to/deck.reading.pdf`, and at
+seed, when documents are missing, `path/to/deck.founder-email.md`. Add `--keep-work` to keep the intermediate files in a
 temporary folder for inspection. Annexes: `.pdf`, `.csv`, `.tsv`, `.xlsx`, `.txt`, `.md`, `.json`.
 
 The plugin itself is in English. The report is written in the user's language (labels shipped
@@ -95,8 +95,10 @@ scripts/apply_proof_cap.py             cap and lowering by proof status
 scripts/consolidate.py                 median of independent passes, per question
 scripts/score.py                       completeness from values and weights
 scripts/report.py                      final markdown, both stages, both languages
+scripts/report_pdf.py                  the same reading as a PDF, stdlib only, no font embedded
 scripts/claims_lib.py                  shared claim helpers
 fixtures/preseed-deck.pdf              12-page fictional pre-seed deck with deliberate gaps
+fixtures/preseed-deck.reading.md       its reading, markdown; .reading.pdf = the same, rendered
 fixtures/seed-deck.pdf                 14-page fictional seed deck
 fixtures/seed-annex-revenue.csv        its revenue export (one minor gap on purpose)
 fixtures/seed-annex-cohorts.csv        its cohort table
@@ -124,7 +126,7 @@ python -m unittest discover -s tests
   both sides, a review, and a question or a stop, never a verdict.
 - The tool can only stop on something false, never on something imprecise.
 - The tool never sends the founder email.
-- Nothing persists outside the report and the email draft unless `--keep-work` is given.
+- Nothing persists outside the report (markdown and PDF) and the email draft unless `--keep-work` is given.
 
 ## Known limits
 
