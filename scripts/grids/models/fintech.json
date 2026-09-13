@@ -1,0 +1,85 @@
+{
+  "model": "fintech",
+  "version": "2026-09-13",
+  "name": {"en": "Fintech", "fr": "Fintech"},
+  "principle": {
+    "en": "Money moves through the product, so a regulator, a partner bank and a loss rate sit between the company and its revenue. The questions follow Qubit Capital's fintech due diligence checklist and Mercury's stage-based metrics: licence or agreement, cost of compliance, credit or fraud risk. They form the model's own block, weight 2.",
+    "fr": "De l'argent passe par le produit, donc un régulateur, une banque partenaire et un taux de perte se placent entre l'entreprise et son revenu. Les questions suivent la checklist de due diligence fintech de Qubit Capital et les métriques par stade de Mercury : licence ou agrément, coût de conformité, risque de crédit ou de fraude. Elles forment le bloc propre au modèle, poids 2."
+  },
+  "sources": [
+    {"title": "Qubit Capital, Fintech Due Diligence Checklist", "url": "https://qubit.capital/blog/fintech-due-diligence-checklist", "date": "2025-12-11"},
+    {"title": "Qubit Capital, How Do Fintech Founders Manage Capital", "url": "https://qubit.capital/blog/how-to-manage-fintech-capital-requirements", "date": "2026-01-02"},
+    {"title": "Mercury, Stage-based startup metrics that impact valuation", "url": "https://mercury.com/blog/stage-based-startup-metrics-valuation", "date": "2026-01-12"}
+  ],
+  "stages": {
+    "seed": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "Q", "name": {"en": "Licence and risk", "fr": "Licence et risque"}, "weight": 2},
+          "questions": [
+            {
+              "id": "Q1",
+              "question": {"en": "Which licence or agreement, held directly or through a partner, since when?", "fr": "Quelle licence ou quel agrément, détenu en direct ou via un partenaire, depuis quand ?"},
+              "found_if": "The licence or the regulated partner named, the regulator, and the date obtained or the date applied for.",
+              "note": "A licence 'in progress' without a filing date = partial.",
+              "claim_types": ["why_now", "other"]
+            },
+            {
+              "id": "Q2",
+              "question": {"en": "What does compliance cost?", "fr": "Combien coûte la conformité ?"},
+              "found_if": "A monthly or annual compliance cost (people, tools, audits) as a share of expenses.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["runway"]
+            },
+            {
+              "id": "Q3",
+              "question": {"en": "Credit or fraud losses, and how they are measured?", "fr": "Pertes de crédit ou de fraude, et comment elles sont mesurées ?"},
+              "found_if": "A loss rate or fraud rate over a period, with the denominator and the method.",
+              "note": "A 'low' loss rate without a figure = absent.",
+              "requires_proof": true,
+              "claim_types": ["churn"]
+            }
+          ]
+        }
+      ]
+    },
+    "series_a": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "Q", "name": {"en": "Licence and risk", "fr": "Licence et risque"}, "weight": 2},
+          "questions": [
+            {
+              "id": "Q1",
+              "question": {"en": "Which licence or agreement, held directly or through a partner, in which countries, since when?", "fr": "Quelle licence ou quel agrément, détenu en direct ou via un partenaire, dans quels pays, depuis quand ?"},
+              "found_if": "The licence or the regulated partner named per country, the regulator, and the date obtained; the partner contract in the annexes.",
+              "note": "A licence 'in progress' without a filing date = partial.",
+              "requires_proof": true,
+              "claim_types": ["why_now", "other"]
+            },
+            {
+              "id": "Q2",
+              "question": {"en": "What does compliance cost, confirmed against the P&L?", "fr": "Combien coûte la conformité, confirmé contre le P&L ?"},
+              "found_if": "A monthly compliance cost (people, tools, audits) as a share of expenses, and the same lines in the P&L.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["runway", "gross_margin"]
+            },
+            {
+              "id": "Q3",
+              "question": {"en": "Credit or fraud losses over twelve months, and how they are measured?", "fr": "Pertes de crédit ou de fraude sur douze mois, et comment elles sont mesurées ?"},
+              "found_if": "A loss rate or fraud rate over twelve months, by cohort, with the denominator and the method.",
+              "note": "A 'low' loss rate without a figure = absent.",
+              "requires_proof": true,
+              "claim_types": ["churn"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

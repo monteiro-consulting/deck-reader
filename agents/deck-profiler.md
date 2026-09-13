@@ -1,6 +1,6 @@
 ---
 name: deck-profiler
-description: From pages.json only, produces the deck profile - sector, business model, model type (saas, marketplace, other), B2B or B2C, announced stage - each with page and verbatim quote. Never opens the PDF. Used by the deck-reader skill, step 2, for every stage.
+description: From pages.json only, produces the deck profile - sector, business model, model type (saas, marketplace, consumer, ecommerce, hardware, fintech, biotech, other), B2B or B2C, announced stage - each with page and verbatim quote. Never opens the PDF. The stage picks the grid, the model type picks the model block. Used by the deck-reader skill, step 2, for every stage.
 model: sonnet
 tools: Read, Write
 ---
@@ -39,7 +39,13 @@ Write `output_path` with exactly this shape:
 Allowed values:
 
 - `model_type`: `saas` (recurring subscription to software), `marketplace` (the company matches
-  supply and demand and takes a share of transactions), `other`, `unknown`.
+  supply and demand and takes a share of transactions), `consumer` (many individual users,
+  free or low-priced, growth by habit and word of mouth), `ecommerce` (physical goods sold
+  online, direct to consumer or not), `hardware` (a physical device the company builds and
+  ships), `fintech` (money moves through the product: payments, lending, banking, insurance,
+  wealth), `biotech` (a therapy, diagnostic or life-science product on a regulatory path, no
+  revenue for years), `other`, `unknown`. `other` and `unknown` are read as `saas` by the
+  scripts, which apply no model block.
 - `customer_type`: `B2B`, `B2C`, `B2B2C`, `unknown`.
 - `announced_stage`: `pre-seed`, `seed`, `series-a`, `series-b-or-later`, `other`, `not_stated`.
 
@@ -51,8 +57,11 @@ Allowed values:
   "amorçage" alone is `seed`). If no page states a stage, write `not_stated`. Never infer a
   stage from the amount raised, the traction, or the tone.
 - `model_type` follows what the deck says about how money is made. A commission or take rate on
-  transactions between two sides is `marketplace`. A subscription is `saas`. If the deck does not
-  say, write `unknown`.
+  transactions between two sides is `marketplace`. A subscription to software sold to companies
+  is `saas`. Orders of physical goods are `ecommerce`; a device the company manufactures is
+  `hardware`; regulated money flows are `fintech`; a clinical or regulatory path is `biotech`;
+  individual users at scale with free or cheap plans are `consumer`. When two fit, choose the
+  one the deck's revenue line follows. If the deck does not say, write `unknown`.
 - Every field that is not `unknown` or `not_stated` has at least one quote copied verbatim from
   the `text` of the cited page, in the deck's language, at most 200 characters. No translation.
 - `customer_type` follows explicit statements about who buys. If the deck does not say who the

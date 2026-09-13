@@ -1,0 +1,110 @@
+{
+  "model": "marketplace",
+  "version": "2026-09-13",
+  "name": {"en": "Marketplace", "fr": "Marketplace"},
+  "principle": {
+    "en": "The company matches supply and demand and takes a share of transactions. Revenue is the take rate on GMV, and both sides must come back. The questions follow a16z's 13 marketplace metrics and are appended to the traction block with its weight.",
+    "fr": "L'entreprise met en relation l'offre et la demande et prend une part des transactions. Le revenu est le take rate sur le GMV, et les deux côtés doivent revenir. Les questions suivent les 13 métriques marketplace d'a16z et s'ajoutent au bloc traction avec son poids."
+  },
+  "sources": [
+    {"title": "a16z, 13 Metrics for Marketplace Companies", "url": "https://a16z.com/13-metrics-for-marketplace-companies/", "date": "2020-02-21"},
+    {"title": "a16z, GMV Retention: The Marketplace Metric Most Ignore", "url": "https://a16z.com/gmv-retention-the-marketplace-metric-most-ignore/", "date": "2022-04-28"},
+    {"title": "Initialized, The Metrics You Need To Raise a Series A", "url": "https://blog.initialized.com/2021/06/the-metrics-you-need-to-raise-a-series-a/", "date": "2021-06-29"}
+  ],
+  "stages": {
+    "seed": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "M1",
+              "question": {"en": "Gross merchandise value and take rate?", "fr": "Volume d'affaires (GMV) et take rate ?"},
+              "found_if": "Both figures, and the net revenue that follows from them.",
+              "note": "From a16z's marketplace metrics.",
+              "requires_proof": true,
+              "claim_types": ["revenue"]
+            },
+            {
+              "id": "M2",
+              "question": {"en": "Match rate and time to match?", "fr": "Taux de match et temps de match ?"},
+              "found_if": "Share of requests served, and the delay.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "M3",
+              "question": {"en": "Concentration?", "fr": "Concentration ?"},
+              "found_if": "Share of volume made by the top 10 sellers or buyers.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["customers"]
+            },
+            {
+              "id": "M4",
+              "question": {"en": "Do both sides come back?", "fr": "Les deux côtés reviennent-ils ?"},
+              "found_if": "Retention figures for supply and demand, separately.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            }
+          ]
+        }
+      ]
+    },
+    "series_a": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "M1",
+              "question": {"en": "Gross merchandise value, take rate, and the net revenue over 24 months?", "fr": "Volume d'affaires (GMV), take rate, et le revenu net sur 24 mois ?"},
+              "found_if": "GMV and take rate, and the monthly net revenue over 24 months that follows from them, matching the P&L.",
+              "note": "From a16z's marketplace metrics. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["revenue"]
+            },
+            {
+              "id": "M2",
+              "question": {"en": "Match rate and time to match, by market?", "fr": "Taux de match et temps de match, par marché ?"},
+              "found_if": "Share of requests served and the delay, for the oldest market and the newest.",
+              "note": "Older markets should match faster: that is the network effect the stage looks for.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "M3",
+              "question": {"en": "Concentration of supply and demand?", "fr": "Concentration de l'offre et de la demande ?"},
+              "found_if": "Share of GMV made by the top 10 sellers and by the top 10 buyers, separately.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["concentration"]
+            },
+            {
+              "id": "M4",
+              "question": {"en": "Do both sides come back?", "fr": "Les deux côtés reviennent-ils ?"},
+              "found_if": "Retention cohorts for supply and for demand, separately, over twelve months or more.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "M5",
+              "question": {"en": "GMV retention by cohort?", "fr": "Rétention du GMV par cohorte ?"},
+              "found_if": "The share of each cohort's spend retained month after month, supply and demand separately.",
+              "note": "From a16z's GMV retention note. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["nrr", "retention"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

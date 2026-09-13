@@ -1,6 +1,6 @@
 # The seed grid
 
-**Grid version: 2026-09-09. Stage covered: seed only.**
+**Grid version: 2026-09-13. Stage covered: seed only.**
 
 This file is a fixed copy of the grid. It does not change at run time. The machine-readable
 version used by the scripts is `scripts/grids/seed.json`; both must stay identical.
@@ -151,20 +151,27 @@ for when the claim is not covered.
 
 ---
 
-## Questions added by business model
+## The business-model block
 
-The profile detects the model. These questions are appended to block B with the block weight.
+The profile detects the model; no model detected means SaaS. The model block lives in its own
+file (`scripts/grids/models/<model>.json`, readable copy in `grids/models/<model>.md`) and is
+applied to this grid by `grid_lib.effective_grid` in three verbs, in this order: **remove**
+questions of the stage grid (by id), **reweight** blocks or questions, **add** questions to a
+block with the block weight, or in a block the model brings. The same files hold the series A
+sections. One block per business model, never one grid per sector.
 
-**Marketplace** (from a16z's 13 marketplace metrics):
+| Model | What the block does to the seed grid |
+|---|---|
+| SaaS (default) | Nothing. The grid is written for it. Benchmarks only |
+| Marketplace | Adds M1 to M4 to block B: GMV and take rate, match rate and time to match, concentration, both sides coming back |
+| Consumer | Adds DAU/MAU, flattening cohorts and organic share to block B; removes the sales cycle; revenue (B2) drops to weight 1 |
+| E-commerce | Adds contribution margin per order and CAC by channel to block C, 60-day repeat rate to block B; removes the sales cycle |
+| Hardware | Adds margin by volume (1,000 / 10,000 / 100,000 units), bill of materials and MOQs to block C; doubles the weight of economics |
+| Fintech | Adds a block Q, weight 2: licence or agreement, cost of compliance, credit or fraud risk |
+| Biotech | Traction to weight 0, economics to 1; removes the sales cycle; adds a block R, weight 3: milestones, IP, regulatory path |
 
-| # | Question | Found if |
-|---|---|---|
-| M1 | Gross merchandise value and take rate? | Both figures, and the net revenue that follows from them |
-| M2 | Match rate and time to match? | Share of requests served, and the delay |
-| M3 | Concentration? | Share of volume made by the top 10 sellers or buyers |
-| M4 | Do both sides come back? | Retention figures for supply and demand, separately |
-
-**SaaS**: no extra question, the grid is written for it.
+Benchmarks are per model and per stage, in `scripts/grids/benchmarks/<model>.json`, each with
+its value, source and date. They are displayed next to the deck figures and never scored.
 
 ---
 
@@ -275,3 +282,4 @@ sources reads the deck or cites the page. That is what the tool does.
 | Date | Change | Triggered by |
 |---|---|---|
 | 2026-09-09 | First version: seed grid, claims and verification, model questions, gates and thresholds | Research on existing seed grids |
+| 2026-09-13 | Model questions moved out of the grid into one block per business model (remove, reweight, add); benchmarks per model and stage in their own files | Series A grid and model blocks |

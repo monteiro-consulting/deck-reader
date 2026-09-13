@@ -1,0 +1,96 @@
+{
+  "model": "ecommerce",
+  "version": "2026-09-13",
+  "name": {"en": "E-commerce and D2C", "fr": "E-commerce et D2C"},
+  "principle": {
+    "en": "Physical goods sold online. The order is the unit: what is left after goods, shipping, returns and marketing, and whether the customer orders again. The questions follow Daasity's ten D2C metrics and Fairview's D2C unit economics; the generic CAC and the sales cycle are replaced.",
+    "fr": "Des biens physiques vendus en ligne. L'unité, c'est la commande : ce qui reste après la marchandise, la livraison, les retours et le marketing, et si le client recommande. Les questions suivent les dix métriques D2C de Daasity et l'économie unitaire D2C de Fairview ; le CAC générique et le cycle de vente sont remplacés."
+  },
+  "sources": [
+    {"title": "Daasity, 10 Metrics D2C Investors Care About the Most", "url": "https://www.daasity.com/post/10-metrics-d2c-investors-care-about-the-most", "date": "2022-03-30"},
+    {"title": "Fairview, D2C Metrics 2026: CAC, LTV, ROAS & Contribution Margin", "url": "https://getfairview.com/d2c-metrics", "date": "2026"},
+    {"title": "Initialized, The Metrics You Need To Raise a Series A (D2C section)", "url": "https://blog.initialized.com/2021/06/the-metrics-you-need-to-raise-a-series-a/", "date": "2021-06-29"}
+  ],
+  "stages": {
+    "seed": {
+      "remove": ["C4"],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "C",
+          "questions": [
+            {
+              "id": "O1",
+              "question": {"en": "Contribution margin per order, after shipping and returns?", "fr": "Marge de contribution par commande, après livraison et retours ?"},
+              "found_if": "Net sales per order minus goods, shipping, payment fees, returns and refunds, with each line visible.",
+              "note": "A gross margin that stops at the goods = partial. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin", "revenue"]
+            },
+            {
+              "id": "O2",
+              "question": {"en": "Customer acquisition cost by channel?", "fr": "CAC par canal ?"},
+              "found_if": "A CAC per channel, paid and blended, with the spend and the orders behind it.",
+              "note": "A blended CAC alone = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        },
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "O3",
+              "question": {"en": "What share of customers order again within 60 days?", "fr": "Quelle part des clients recommande sous 60 jours ?"},
+              "found_if": "A 60-day repeat purchase rate by acquisition cohort.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            }
+          ]
+        }
+      ]
+    },
+    "series_a": {
+      "remove": ["C2", "C3"],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "C",
+          "questions": [
+            {
+              "id": "O1",
+              "question": {"en": "Contribution margin per order, after shipping and returns, over 24 months?", "fr": "Marge de contribution par commande, après livraison et retours, sur 24 mois ?"},
+              "found_if": "Net sales per order minus goods, shipping, payment fees, returns and refunds, month by month, matching the P&L.",
+              "note": "A gross margin that stops at the goods = partial. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin", "revenue"]
+            },
+            {
+              "id": "O2",
+              "question": {"en": "Customer acquisition cost by channel, paid and blended, and payback?", "fr": "CAC par canal, payant et mixte, et délai de récupération ?"},
+              "found_if": "A CAC per channel, paid and blended, the spend and the orders behind it, and the months of contribution margin needed to recover it.",
+              "note": "A blended CAC alone = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        },
+        {
+          "block": "D",
+          "questions": [
+            {
+              "id": "O3",
+              "question": {"en": "What share of customers order again within 60 days, cohort by cohort?", "fr": "Quelle part des clients recommande sous 60 jours, cohorte par cohorte ?"},
+              "found_if": "A 60-day repeat purchase rate by monthly acquisition cohort over twelve months or more.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

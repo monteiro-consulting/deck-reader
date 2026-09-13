@@ -1,0 +1,18 @@
+{
+  "model": "biotech",
+  "version": "2026-09-13",
+  "rule": "Displayed next to the deck figure with source and date, never in the score. Biotech has no revenue benchmark: what is shown is what investors read instead. Empty value = no dated source found.",
+  "stages": {
+    "seed": [
+      {"id": "bio-seed-milestones", "metric": {"en": "What replaces revenue", "fr": "Ce qui remplace le revenu"}, "question_ids": ["R1", "R3"], "claim_types": ["why_now"], "value": "raised around scientific and regulatory progress: preclinical validation, regulatory filings, clinical trial data, manufacturing readiness, commercial approvals", "source": "Mercury, A guide to the top biotech and life sciences VC firms for startups", "url": "https://mercury.com/blog/top-biotech-life-sciences-vc-firms", "date": "2026-08-25", "note": "Qualitative; no numeric threshold given."},
+      {"id": "bio-seed-runway", "metric": {"en": "Runway", "fr": "Runway"}, "question_ids": ["F3"], "claim_types": ["runway"], "value": "runway planned to the next development milestone rather than to revenue", "source": "Mercury, A guide to the top biotech and life sciences VC firms for startups", "url": "https://mercury.com/blog/top-biotech-life-sciences-vc-firms", "date": "2026-08-25", "note": "Qualitative."},
+      {"id": "bio-seed-ip", "metric": {"en": "Intellectual property", "fr": "Propriété intellectuelle"}, "question_ids": ["R2"], "claim_types": ["other"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a patent count or coverage benchmark found."}
+    ],
+    "series_a": [
+      {"id": "bio-a-milestones", "metric": {"en": "What replaces revenue", "fr": "Ce qui remplace le revenu"}, "question_ids": ["R1", "R3"], "claim_types": ["why_now"], "value": "growth-stage investors read clinical trial outcomes, regulatory milestones, manufacturing strategy, reimbursement pathways", "source": "Mercury, A guide to the top biotech and life sciences VC firms for startups", "url": "https://mercury.com/blog/top-biotech-life-sciences-vc-firms", "date": "2026-08-25", "note": "Qualitative; no numeric threshold given."},
+      {"id": "bio-a-runway", "metric": {"en": "Runway", "fr": "Runway"}, "question_ids": ["G3"], "claim_types": ["runway"], "value": "runway planned to the next development milestone rather than to revenue; larger rounds to fund operations through it", "source": "Mercury, A guide to the top biotech and life sciences VC firms for startups", "url": "https://mercury.com/blog/top-biotech-life-sciences-vc-firms", "date": "2026-08-25", "note": "Qualitative."},
+      {"id": "bio-a-ip", "metric": {"en": "Intellectual property", "fr": "Propriété intellectuelle"}, "question_ids": ["R2"], "claim_types": ["other"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a patent count or coverage benchmark found."},
+      {"id": "bio-a-phase-duration", "metric": {"en": "Clinical phase durations", "fr": "Durée des phases cliniques"}, "question_ids": ["R1"], "claim_types": ["why_now"], "value": "", "source": "", "url": "", "date": "", "note": "No source from the required list gives phase durations; left empty."}
+    ]
+  }
+}

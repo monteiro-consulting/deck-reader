@@ -1,0 +1,18 @@
+{
+  "model": "saas",
+  "version": "2026-09-13",
+  "name": {"en": "SaaS", "fr": "SaaS"},
+  "principle": {
+    "en": "The default model. The stage grids are written for it: no question is added, removed or reweighted. Only the benchmarks apply (scripts/grids/benchmarks/saas.json), displayed next to the deck figures, never in the score.",
+    "fr": "Le modèle par défaut. Les grilles de stade sont écrites pour lui : aucune question ajoutée, retirée ou repondérée. Seuls les repères s'appliquent (scripts/grids/benchmarks/saas.json), affichés à côté des chiffres du deck, jamais dans le score."
+  },
+  "sources": [
+    {"title": "CRV, Series A Metrics VCs Expect in 2026", "url": "https://www.crv.com/content/series-a-metrics-vcs-expect", "date": "2026-03-31"},
+    {"title": "Bessemer, Scaling to $100 Million", "url": "https://www.bvp.com/atlas/scaling-to-100-million", "date": "2021-09-21"},
+    {"title": "Initialized, The Metrics You Need To Raise a Series A", "url": "https://blog.initialized.com/2021/06/the-metrics-you-need-to-raise-a-series-a/", "date": "2021-06-29"}
+  ],
+  "stages": {
+    "seed": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
+    "series_a": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []}
+  }
+}

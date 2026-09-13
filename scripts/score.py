@@ -16,6 +16,8 @@ Rules (fixed with the grid, see grids/<stage>.md "The computation"):
     C3 (weight 0)  not counted
     F3             not_assessable and not counted when F1 or F2 is not "found"
     weight_if_b2c  a question's weight when the profile says B2C (pre-seed B3: 1, seed C4: 0)
+    block weight 0 a block reweighted to 0 by a model block (biotech traction) is information
+                   only: its questions are answered, it never counts in the global, never red
     capped         a seed answer capped to partial by apply_proof_cap.py is scored as partial
     red block      percent strictly below the grid threshold (50)
     call questions absent or partial questions in blocks of weight 3
@@ -113,7 +115,8 @@ def compute(grid, answers, profile):
             "points": block_points,
             "max": block_max,
             "percent": percent,
-            "red": percent < threshold,
+            "red": percent < threshold and block["weight"] > 0,
+            "information_only": block["weight"] == 0,
         })
 
     total_weight = sum(b["weight"] for b in blocks_out)
@@ -128,6 +131,7 @@ def compute(grid, answers, profile):
 
     return {
         "applied_model_questions": grid.get("applied_model_questions", ""),
+        "applied_model": grid.get("applied_model", ""),
         "passes": passes,
         "unstable": unstable,
         "confirmation_due": confirmation_due,

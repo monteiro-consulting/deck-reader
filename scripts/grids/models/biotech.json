@@ -1,0 +1,79 @@
+{
+  "model": "biotech",
+  "version": "2026-09-13",
+  "name": {"en": "Biotech", "fr": "Biotech"},
+  "principle": {
+    "en": "No customer, no revenue, no retention for years: the evidence is scientific and regulatory progress. The questions follow Mercury's guide to biotech investors: milestones reached, intellectual property, regulatory path. Traction and retention are asked for information only (weight 0), unit economics drops to 1, the sales cycle disappears, and the model's own block counts 3.",
+    "fr": "Pas de client, pas de revenu, pas de rétention pendant des années : la preuve, c'est l'avancement scientifique et réglementaire. Les questions suivent le guide Mercury des investisseurs biotech : jalons atteints, propriété intellectuelle, chemin réglementaire. La traction et la rétention sont posées pour information (poids 0), l'économie unitaire descend à 1, le cycle de vente disparaît, et le bloc propre au modèle compte 3."
+  },
+  "sources": [
+    {"title": "Mercury, A guide to the top biotech and life sciences VC firms for startups", "url": "https://mercury.com/blog/top-biotech-life-sciences-vc-firms", "date": "2026-08-25"},
+    {"title": "Mercury, Stage-based startup metrics that impact valuation", "url": "https://mercury.com/blog/stage-based-startup-metrics-valuation", "date": "2026-01-12"}
+  ],
+  "stages": {
+    "seed": {
+      "remove": ["C4"],
+      "reweight": {"blocks": {"B": 0, "C": 1}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "R", "name": {"en": "Science and regulation", "fr": "Science et réglementation"}, "weight": 3},
+          "questions": [
+            {
+              "id": "R1",
+              "question": {"en": "Which preclinical or clinical milestones were reached, when?", "fr": "Quels jalons précliniques ou cliniques ont été atteints, quand ?"},
+              "found_if": "Each milestone named (in vitro, in vivo, tox, IND or CTA filing, phase) with its date and the data behind it.",
+              "note": "A milestone 'expected' is not a milestone reached.",
+              "claim_types": ["why_now", "other"]
+            },
+            {
+              "id": "R2",
+              "question": {"en": "What intellectual property, filed or granted, and who owns it?", "fr": "Quelle propriété intellectuelle, déposée ou accordée, et qui la détient ?"},
+              "found_if": "Patent numbers or filing dates, the owner (company, university, licence), and the licence terms if any.",
+              "note": "'Patent pending' without a filing date = partial.",
+              "claim_types": ["other"]
+            },
+            {
+              "id": "R3",
+              "question": {"en": "Which regulatory path, and what is the next step with its date?", "fr": "Quel chemin réglementaire, et quelle est la prochaine étape avec sa date ?"},
+              "found_if": "The agency and route named (FDA, EMA; IND, 510(k), CE...), the designations obtained, and the next filing with its date.",
+              "note": "",
+              "claim_types": ["why_now", "other"]
+            }
+          ]
+        }
+      ]
+    },
+    "series_a": {
+      "remove": ["C3"],
+      "reweight": {"blocks": {"B": 0, "D": 0, "C": 1}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "R", "name": {"en": "Science and regulation", "fr": "Science et réglementation"}, "weight": 3},
+          "questions": [
+            {
+              "id": "R1",
+              "question": {"en": "Which preclinical or clinical milestones were reached since the seed, when, with what data?", "fr": "Quels jalons précliniques ou cliniques ont été atteints depuis le seed, quand, avec quelles données ?"},
+              "found_if": "Each milestone named (tox, IND or CTA filing, phase 1 readout...) with its date and the data behind it.",
+              "note": "A milestone 'expected' is not a milestone reached.",
+              "claim_types": ["why_now", "other"]
+            },
+            {
+              "id": "R2",
+              "question": {"en": "What intellectual property, filed or granted, in which territories, and who owns it?", "fr": "Quelle propriété intellectuelle, déposée ou accordée, dans quels territoires, et qui la détient ?"},
+              "found_if": "Patent numbers or filing dates per territory, the owner (company, university, licence), and the licence terms if any.",
+              "note": "'Patent pending' without a filing date = partial.",
+              "claim_types": ["other"]
+            },
+            {
+              "id": "R3",
+              "question": {"en": "Which regulatory path, which designations, and what does this round fund up to?", "fr": "Quel chemin réglementaire, quelles désignations, et jusqu'où ce tour finance-t-il ?"},
+              "found_if": "The agency and route named, the designations obtained, and the milestone the round funds, with its date, consistent with the financial model.",
+              "note": "",
+              "claim_types": ["why_now", "runway", "other"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

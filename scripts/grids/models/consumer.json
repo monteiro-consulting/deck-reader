@@ -1,0 +1,86 @@
+{
+  "model": "consumer",
+  "version": "2026-09-13",
+  "name": {"en": "Consumer", "fr": "Consumer"},
+  "principle": {
+    "en": "Many users, small or no payments, growth carried by habit and word of mouth. The evidence is engagement and cohort retention, not revenue. The questions follow a16z's consumer benchmarks and Andrew Chen's magic metrics; revenue questions lose weight, the sales cycle disappears.",
+    "fr": "Beaucoup d'utilisateurs, des paiements petits ou nuls, une croissance portée par l'habitude et le bouche-à-oreille. La preuve, c'est l'engagement et la rétention par cohorte, pas le revenu. Les questions suivent les repères consumer d'a16z et les magic metrics d'Andrew Chen ; les questions de revenu perdent du poids, le cycle de vente disparaît."
+  },
+  "sources": [
+    {"title": "a16z, Do You Have Lightning In a Bottle? How to Benchmark Your Social App", "url": "https://a16z.com/do-you-have-lightning-in-a-bottle-how-to-benchmark-your-social-app/", "date": "2023-03-03"},
+    {"title": "Andrew Chen (a16z), magic metrics indicating a startup probably has product/market fit", "url": "https://x.com/andrewchen/status/1184170125525577728", "date": "2019-10-15"},
+    {"title": "a16z, 16 Startup Metrics", "url": "https://a16z.com/16-startup-metrics/", "date": "2015-08-21"}
+  ],
+  "stages": {
+    "seed": {
+      "remove": ["C4"],
+      "reweight": {"blocks": {}, "questions": {"B2": 1}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "N1",
+              "question": {"en": "Daily active users over monthly active users?", "fr": "DAU sur MAU ?"},
+              "found_if": "Both counts with the definition of 'active', and the ratio, from an analytics export.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N2",
+              "question": {"en": "Do the cohort curves flatten?", "fr": "Les cohortes s'aplatissent-elles ?"},
+              "found_if": "Day 1, 7 and 30 retention by cohort, with the day where the curve flattens.",
+              "note": "A curve that still falls at day 30 = partial.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N3",
+              "question": {"en": "What share of new users is organic?", "fr": "Quelle part des nouveaux utilisateurs est organique ?"},
+              "found_if": "The share of new users from organic, referral or word of mouth, with the method.",
+              "note": "All paid = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        }
+      ]
+    },
+    "series_a": {
+      "remove": ["B2", "C3"],
+      "reweight": {"blocks": {}, "questions": {"B1": 1}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "N1",
+              "question": {"en": "Daily active users over monthly active users, over 24 months?", "fr": "DAU sur MAU, sur 24 mois ?"},
+              "found_if": "Both counts with the definition of 'active', and the monthly ratio over 24 months, from an analytics export.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N2",
+              "question": {"en": "Do the cohort curves flatten, and do newer cohorts do better?", "fr": "Les cohortes s'aplatissent-elles, et les cohortes récentes font-elles mieux ?"},
+              "found_if": "Day 1, 7 and 30 retention by monthly cohort over twelve months or more, with the day where the curves flatten.",
+              "note": "A curve that still falls at day 30 = partial.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N3",
+              "question": {"en": "What share of new users is organic, and what is the paid CAC?", "fr": "Quelle part des nouveaux utilisateurs est organique, et quel est le CAC payant ?"},
+              "found_if": "The share of new users from organic, referral or word of mouth, and the cost per paid user, with the method.",
+              "note": "All paid = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

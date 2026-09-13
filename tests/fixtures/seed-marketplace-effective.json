@@ -1,6 +1,6 @@
 {
   "stage": "seed",
-  "version": "2026-09-13",
+  "version": "2026-09-09",
   "scale": {
     "found": 2,
     "partial": 1,
@@ -44,7 +44,6 @@
       "market"
     ]
   },
-  "model_block_note": "Model-specific questions live in scripts/grids/models/<model>.json and are applied by grid_lib.effective_grid (remove, reweight, add). Benchmarks live in scripts/grids/benchmarks/<model>.json and are never scored.",
   "claim_types": {
     "revenue": {
       "check": "annex",
@@ -235,6 +234,58 @@
           "requires_proof": true,
           "claim_types": [
             "acquisition"
+          ]
+        },
+        {
+          "id": "M1",
+          "question": {
+            "en": "Gross merchandise value and take rate?",
+            "fr": "Volume d'affaires (GMV) et take rate ?"
+          },
+          "found_if": "Both figures, and the net revenue that follows from them.",
+          "note": "From a16z's marketplace metrics.",
+          "requires_proof": true,
+          "claim_types": [
+            "revenue"
+          ]
+        },
+        {
+          "id": "M2",
+          "question": {
+            "en": "Match rate and time to match?",
+            "fr": "Taux de match et temps de match ?"
+          },
+          "found_if": "Share of requests served, and the delay.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": [
+            "retention"
+          ]
+        },
+        {
+          "id": "M3",
+          "question": {
+            "en": "Concentration?",
+            "fr": "Concentration ?"
+          },
+          "found_if": "Share of volume made by the top 10 sellers or buyers.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": [
+            "customers"
+          ]
+        },
+        {
+          "id": "M4",
+          "question": {
+            "en": "Do both sides come back?",
+            "fr": "Les deux côtés reviennent-ils ?"
+          },
+          "found_if": "Retention figures for supply and demand, separately.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": [
+            "retention"
           ]
         }
       ]
@@ -487,5 +538,6 @@
         }
       ]
     }
-  ]
+  ],
+  "applied_model_questions": "marketplace"
 }

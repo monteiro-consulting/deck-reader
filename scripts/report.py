@@ -13,7 +13,7 @@ Usage (reading stopped):
               --abort-kind stage|no_annexes|insufficient_annexes|contradiction --abort-reason "..."
               [--claims ... --annexes ... --gate ... --email ...]
 
---grid is a stage name (preseed, seed) or a path. --lang selects the labels. Shipped: en, fr.
+--grid is a stage name (preseed, seed, series_a) or a path. --lang selects the labels. Shipped: en, fr.
 Any other code falls back to English labels; the writer's prose (reading.md) is in whatever
 language the orchestrator requested. Grid question wording follows the same rule.
 """
@@ -24,7 +24,9 @@ import json
 import os
 import sys
 
-from grid_lib import effective_grid, load_grid
+from grid_lib import GridError, effective_grid, load_benchmarks, load_grid, stage_key
+
+STAGES_WITH_ANNEXES = ("seed", "series-a")
 
 LABELS = {
     "en": {
@@ -37,6 +39,7 @@ LABELS = {
         "reference_transcription": "model transcription (PDF text layer unusable)",
         "disclaimer_preseed": "This report measures the completeness of the deck against the pre-seed grid: whether the deck answers the questions an investor will ask. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation.",
         "disclaimer_seed": "This report measures the completeness of the deck against the seed grid, and whether what the deck states holds up against the annexes provided and public sources. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation. A figure the deck states without a document behind it cannot score higher than partial.",
+        "disclaimer_series-a": "This report measures the completeness of the deck against the series A grid, and whether what the deck states holds up against the six required documents and public sources. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation. A figure the deck states without a document behind it cannot score higher than partial. Benchmarks are shown next to the figures with their source and date; they never enter the score.",
         "image_note": "Text that only appears inside images (charts, screenshots) is not in the PDF text layer and cannot be cited; it is treated as absent.",
         "profile": "Deck profile",
         "sector": "Sector",
@@ -105,6 +108,16 @@ LABELS = {
         "abort_no_annexes": "The deck came without any supporting document. At seed, a figure without a document behind it cannot be read as proven, so the reading stops here. No web check, no grid, no score. The email draft below asks the founder for the documents.",
         "abort_insufficient_annexes": "The documents provided do not cover enough of the key figures the deck states (revenue, customers, retention). The reading stops here, before any web check or scoring. The email draft below lists, statement by statement, what would be needed.",
         "abort_contradiction": "At least one statement of the deck is contradicted by the documents or by public sources, beyond what a different date, definition or source could explain, after a second independent review looked for such an explanation. The reading stops here and shows the sources on both sides. This is not a verdict on the company: the investor sees the evidence and decides. Everything read so far is kept below.",
+        "abort_missing_documents": "At series A every deck is read with the same six documents: monthly P&L over 24 months, cohorts over 12 months or more, CRM export with weighted pipeline, cap table, three-year financial model, contracts of the top 10 customers. At least one is missing or incomplete, so the reading stops here, before any claim, web check or scoring. The email draft below lists them, document by document.",
+        "documents_required": "Required documents (fixed list)",
+        "documents_all_present": "Every document of the fixed list is present.",
+        "doc_line": "- **{name}**: {requirement} ({reason})",
+        "doc_present": "present",
+        "benchmark": "Benchmark",
+        "benchmarks": "Benchmarks shown, never scored",
+        "benchmarks_note": "Orders of magnitude for the model and the stage, each with its source and date. They are displayed next to the deck figures and never enter the completeness score. An empty value means no dated source was found.",
+        "benchmark_none": "no dated source",
+        "information_only_block": "for information, weight 0",
         "page_abbrev": "p.",
     },
     "fr": {
@@ -117,6 +130,7 @@ LABELS = {
         "reference_transcription": "la transcription par le modèle (couche texte du PDF inutilisable)",
         "disclaimer_preseed": "Ce rapport mesure la complétude du deck au regard de la grille pre-seed : le deck répond-il aux questions qu'un investisseur va poser. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement.",
         "disclaimer_seed": "Ce rapport mesure la complétude du deck au regard de la grille seed, et si ce que le deck affirme tient face aux annexes fournies et aux sources publiques. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement. Un chiffre avancé sans document derrière ne peut pas dépasser « partielle ».",
+        "disclaimer_series-a": "Ce rapport mesure la complétude du deck au regard de la grille série A, et si ce que le deck affirme tient face aux six documents obligatoires et aux sources publiques. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement. Un chiffre avancé sans document derrière ne peut pas dépasser « partielle ». Les repères sont affichés à côté des chiffres avec leur source et leur date ; ils n'entrent jamais dans le score.",
         "image_note": "Le texte qui n'apparaît que dans des images (graphiques, captures) n'est pas dans la couche texte du PDF et ne peut pas être cité ; il est traité comme absent.",
         "profile": "Fiche du deck",
         "sector": "Secteur",
@@ -185,6 +199,16 @@ LABELS = {
         "abort_no_annexes": "Le deck est arrivé sans aucune pièce justificative. Au seed, un chiffre sans document derrière ne peut pas être lu comme prouvé, donc la lecture s'arrête ici. Pas de vérification web, pas de grille, pas de score. Le brouillon d'email ci-dessous demande les documents au fondateur.",
         "abort_insufficient_annexes": "Les documents fournis ne couvrent pas assez des chiffres clés que le deck avance (revenus, clients, rétention). La lecture s'arrête ici, avant toute vérification web et tout score. Le brouillon d'email ci-dessous liste, affirmation par affirmation, ce qu'il faudrait.",
         "abort_contradiction": "Au moins une affirmation du deck est contredite par les documents ou par des sources publiques, au-delà de ce qu'une date, une définition ou une source différente pourrait expliquer, après qu'une seconde relecture indépendante a cherché une telle explication. La lecture s'arrête ici et montre les sources des deux côtés. Ce n'est pas un verdict sur l'entreprise : l'investisseur voit les preuves et décide. Tout ce qui a été lu est conservé ci-dessous.",
+        "abort_missing_documents": "En série A, chaque deck est lu avec les six mêmes documents : P&L mensuel sur 24 mois, cohortes sur 12 mois et plus, export CRM avec pipeline pondéré, table de capitalisation, modèle financier sur 3 ans, contrats des 10 premiers clients. Au moins un manque ou est incomplet, donc la lecture s'arrête ici, avant toute affirmation, vérification web ou score. Le brouillon d'email ci-dessous les liste, document par document.",
+        "documents_required": "Documents obligatoires (liste fixe)",
+        "documents_all_present": "Tous les documents de la liste fixe sont présents.",
+        "doc_line": "- **{name}** : {requirement} ({reason})",
+        "doc_present": "présent",
+        "benchmark": "Repère",
+        "benchmarks": "Repères affichés, jamais notés",
+        "benchmarks_note": "Ordres de grandeur pour le modèle et le stade, chacun avec sa source et sa date. Ils sont affichés à côté des chiffres du deck et n'entrent jamais dans le score de complétude. Une valeur vide signifie qu'aucune source datée n'a été trouvée.",
+        "benchmark_none": "pas de source datée",
+        "information_only_block": "pour information, poids 0",
         "page_abbrev": "p.",
     },
 }
@@ -244,8 +268,8 @@ def header(lab, deck, grid, date, reference_source):
         meta.append(f"**{lab['reference']}**: {ref}")
     lines.append(" · ".join(meta))
     lines.append("")
-    key = "disclaimer_seed" if grid["stage"] == "seed" else "disclaimer_preseed"
-    lines.append(f"> {lab[key]}")
+    key = "disclaimer_preseed" if grid["stage"] == "pre-seed" else f"disclaimer_{grid['stage']}"
+    lines.append(f"> {lab.get(key, lab['disclaimer_preseed'])}")
     if reference_source == "pdf":
         lines.append(">")
         lines.append(f"> {lab['image_note']}")
@@ -269,7 +293,7 @@ def profile_section(lab, profile, grid, annexes):
         lines.append(f"- **{lab['pages']}**: {profile['page_count']}")
     if grid.get("applied_model_questions"):
         lines.append(f"- **{lab['model_questions']}**: {grid['applied_model_questions']}")
-    if grid["stage"] == "seed":
+    if grid["stage"] in STAGES_WITH_ANNEXES:
         items = (annexes or {}).get("annexes") or []
         if items:
             lines.append(f"- **{lab['annexes']}**: " + "; ".join(lab["annex_line"].format(id=a["id"], file=a["file"], kind=a["kind"], pages=len(a.get("pages", []))) for a in items))
@@ -284,6 +308,8 @@ def completeness_section(lab, grid, score, lang):
     lines = [f"## {lab['completeness']}", "", f"| {lab['block']} | | % |", "|---|---|---:|"]
     for b in score["blocks"]:
         name = f"{b['id']}. {pick(b['name'], lang)} ({lab['weight']} {b['weight']})"
+        if b.get("information_only"):
+            name = f"{b['id']}. {pick(b['name'], lang)} ({lab['information_only_block']})"
         lines.append(f"| {name} | `{bar(b['percent'])}` | {fmt_pct(b['percent'])} |")
     lines.append(f"| **{lab['global']}** | `{bar(score['global_percent'])}` | **{fmt_pct(score['global_percent'])}** |")
     lines.append("")
@@ -328,15 +354,58 @@ def _backing(lab, c):
     return " · ".join(parts) if parts else "—"
 
 
-def claims_section(lab, claims_doc):
+def _bench_cell(lab, items):
+    parts = []
+    for b in items:
+        value = b.get("value") or lab["benchmark_none"]
+        tail = ", ".join(x for x in (b.get("source") or "", b.get("date") or "") if x)
+        parts.append(f"{value} ({tail})" if tail else value)
+    return " · ".join(parts) if parts else "—"
+
+
+def benchmarks_for_question(benchmarks, qid):
+    return [b for b in (benchmarks or []) if qid in (b.get("question_ids") or [])]
+
+
+def benchmarks_for_claim(benchmarks, claim_type):
+    return [b for b in (benchmarks or []) if claim_type in (b.get("claim_types") or [])]
+
+
+def claims_section(lab, claims_doc, benchmarks=None):
     claims = (claims_doc or {}).get("claims") or []
     if not claims:
         return []
-    lines = [f"## {lab['claims']}", "", f"| # | {lab['page']} | {lab['claim']} | {lab['type']} | {lab['status']} | {lab['backing']} |", "|---|---|---|---|---|---|"]
+    with_bench = bool(benchmarks)
+    head = f"| # | {lab['page']} | {lab['claim']} | {lab['type']} | {lab['status']} | {lab['backing']} |"
+    sep = "|---|---|---|---|---|---|"
+    if with_bench:
+        head += f" {lab['benchmark']} |"
+        sep += "---|"
+    lines = [f"## {lab['claims']}", "", head, sep]
     for c in claims:
         st = c.get("status") or "not_checked"
         label = f"{CLAIM_SYMBOL.get(st, '')} {lab.get('st_' + st, st)}"
-        lines.append(f"| {c['id']} | {c.get('page')} | {md_cell(c.get('statement'))} | {c.get('type')} | {label} | {_backing(lab, c)} |")
+        row = f"| {c['id']} | {c.get('page')} | {md_cell(c.get('statement'))} | {c.get('type')} | {label} | {_backing(lab, c)} |"
+        if with_bench:
+            items = benchmarks_for_claim(benchmarks, c.get("type")) if c.get("value") is not None else []
+            row += f" {md_cell(_bench_cell(lab, items)) if items else '—'} |"
+        lines.append(row)
+    lines.append("")
+    return lines
+
+
+def benchmarks_section(lab, benchmarks, lang):
+    if not benchmarks:
+        return []
+    lines = [f"## {lab['benchmarks']}", "", lab["benchmarks_note"], "", f"| {lab['question']} | {lab['benchmark']} | | |", "|---|---|---|---|"]
+    for b in benchmarks:
+        metric = pick(b.get("metric"), lang)
+        value = b.get("value") or lab["benchmark_none"]
+        src = md_cell(b.get("source")) or "—"
+        if b.get("url"):
+            src = f"[{src}]({b['url']})"
+        note = f" {md_cell(b['note'])}" if b.get("note") else ""
+        lines.append(f"| {', '.join(b.get('question_ids') or [])} · {md_cell(metric)} | {md_cell(value)}{note} | {src} | {b.get('date') or '—'} |")
     lines.append("")
     return lines
 
@@ -357,10 +426,22 @@ def contradictions_section(lab, claims_doc):
     return lines
 
 
-def to_request_section(lab, gate, email_text):
+def to_request_section(lab, gate, email_text, lang="en"):
     lines = [f"## {lab['to_request']}", ""]
     items = (gate or {}).get("to_request") or []
-    if not items:
+    if (gate or {}).get("gate") == "documents":
+        lines[0] = f"## {lab['documents_required']}"
+        for p in (gate or {}).get("present") or []:
+            lines.append(f"- {p['document']}: {lab['doc_present']} ({', '.join(p.get('annex_ids') or [])})")
+        if not items:
+            lines += [lab["documents_all_present"], ""]
+        else:
+            for it in items:
+                name = pick(it.get("name"), lang) or it.get("document", "?")
+                req = pick(it.get("requirement"), lang)
+                lines.append(lab["doc_line"].format(name=md_cell(name), requirement=md_cell(req), reason=md_cell(it.get("reason", ""))))
+            lines.append("")
+    elif not items:
         lines += [lab["nothing_to_request"], ""]
     else:
         for it in items:
@@ -371,16 +452,22 @@ def to_request_section(lab, gate, email_text):
     return lines
 
 
-def questions_section(lab, grid, score, answers, lang):
+def questions_section(lab, grid, score, answers, lang, benchmarks=None):
     by_id = {a["question_id"]: a for a in answers}
     sq = {q["question_id"]: q for q in score["questions"]}
+    with_bench = bool(benchmarks)
     lines = [f"## {lab['by_question']}", ""]
     for block in grid["blocks"]:
         sb = next(b for b in score["blocks"] if b["id"] == block["id"])
         lines.append(f"### {block['id']}. {pick(block['name'], lang)} — {lab['weight']} {block['weight']} — {fmt_pct(sb['percent'])}")
         lines.append("")
-        lines.append(f"| # | {lab['question']} | {lab['value']} | {lab['page']} | {lab['quote']} |")
-        lines.append("|---|---|---|---|---|")
+        head = f"| # | {lab['question']} | {lab['value']} | {lab['page']} | {lab['quote']} |"
+        sep = "|---|---|---|---|---|"
+        if with_bench:
+            head += f" {lab['benchmark']} |"
+            sep += "---|"
+        lines.append(head)
+        lines.append(sep)
         details = []
         for q in block["questions"]:
             qid = q["id"]
@@ -408,7 +495,11 @@ def questions_section(lab, grid, score, answers, lang):
             quotes = " / ".join(f'"{md_cell(e.get("quote"))}"' for e in evidence) if evidence else "—"
             if a.get("claim_ids"):
                 quotes += " · " + ", ".join(a["claim_ids"])
-            lines.append(f"| {qid} | {md_cell(pick(q['question'], lang))} | {label} | {pages} | {quotes} |")
+            row = f"| {qid} | {md_cell(pick(q['question'], lang))} | {label} | {pages} | {quotes} |"
+            if with_bench:
+                items = benchmarks_for_question(benchmarks, qid)
+                row += f" {md_cell(_bench_cell(lab, items)) if items else '—'} |"
+            lines.append(row)
             if value in ("partial", "absent") and status != "not_assessable":
                 d = []
                 if a.get("missing"):
@@ -424,31 +515,41 @@ def questions_section(lab, grid, score, answers, lang):
     return lines
 
 
-def abort_report(lab, deck, grid, profile, date, kind, reason, annexes, claims_doc, gate, email_text, pages_meta):
+def grid_benchmarks(grid):
+    """The benchmarks to display for this effective grid: model and stage. Empty at pre-seed."""
+    try:
+        return load_benchmarks(grid.get("applied_model") or "saas", stage_key(grid))
+    except GridError:
+        return []
+
+
+def abort_report(lab, deck, grid, profile, date, kind, reason, annexes, claims_doc, gate, email_text, pages_meta, lang="en"):
     reference_source = (pages_meta or {}).get("reference_source", "")
     lines = header(lab, deck, grid, date, reference_source or None)
     lines += [f"## {lab['abort_title']}", "", f"**{lab['abort_reason']}**: {reason}", "", lab[f"abort_{kind}"], ""]
     lines += profile_section(lab, profile, grid, annexes)
     if kind == "contradiction":
         lines += contradictions_section(lab, claims_doc)
-    if kind in ("no_annexes", "insufficient_annexes", "contradiction"):
-        lines += to_request_section(lab, gate, email_text)
+    if kind in ("no_annexes", "insufficient_annexes", "contradiction", "missing_documents"):
+        lines += to_request_section(lab, gate, email_text, lang)
     if kind in ("insufficient_annexes", "contradiction"):
-        lines += claims_section(lab, claims_doc)
+        lines += claims_section(lab, claims_doc, grid_benchmarks(grid))
     return "\n".join(lines)
 
 
 def full_report(lab, deck, grid, profile, answers, score, reading, pages_meta, date, lang, annexes, claims_doc, gate, email_text):
     reference_source = (pages_meta or {}).get("reference_source", "")
+    benchmarks = grid_benchmarks(grid)
     lines = header(lab, deck, grid, date, reference_source)
     lines += profile_section(lab, profile, grid, annexes)
     lines += completeness_section(lab, grid, score, lang)
     lines += reading_section(lab, reading)
-    if grid["stage"] == "seed":
+    if grid["stage"] in STAGES_WITH_ANNEXES:
         lines += contradictions_section(lab, claims_doc)
-        lines += to_request_section(lab, gate, email_text)
-        lines += claims_section(lab, claims_doc)
-    lines += questions_section(lab, grid, score, answers, lang)
+        lines += to_request_section(lab, gate, email_text, lang)
+        lines += claims_section(lab, claims_doc, benchmarks)
+    lines += questions_section(lab, grid, score, answers, lang, benchmarks)
+    lines += benchmarks_section(lab, benchmarks, lang)
     return "\n".join(lines)
 
 
@@ -478,11 +579,11 @@ def main(argv=None):
     ap.add_argument("--pages", help="pages.json, for the reference_source header line")
     ap.add_argument("--annexes", help="annexes.json (seed)")
     ap.add_argument("--claims", help="claims.final.json or claims.annex.json (seed)")
-    ap.add_argument("--gate", help="gate.json from seed_gate.py annexes (seed)")
+    ap.add_argument("--gate", help="gate.json from seed_gate.py annexes (seed) or series_a_gate.py documents (series A)")
     ap.add_argument("--email", help="founder email draft (seed)")
     ap.add_argument("--lang", default="en")
     ap.add_argument("--date", default=dt.date.today().isoformat())
-    ap.add_argument("--abort-kind", default=None, choices=["stage", "no_annexes", "insufficient_annexes", "contradiction"])
+    ap.add_argument("--abort-kind", default=None, choices=["stage", "no_annexes", "insufficient_annexes", "contradiction", "missing_documents"])
     ap.add_argument("--abort-reason", default=None)
     ap.add_argument("--out", required=True)
     ap.add_argument("--no-pdf", action="store_true", help="skip the PDF rendered next to --out")
@@ -499,7 +600,7 @@ def main(argv=None):
 
     if args.abort_kind or args.abort_reason:
         kind = args.abort_kind or "stage"
-        text = abort_report(lab, args.deck, grid, profile, args.date, kind, args.abort_reason or kind, annexes, claims_doc, gate, email_text, pages_meta)
+        text = abort_report(lab, args.deck, grid, profile, args.date, kind, args.abort_reason or kind, annexes, claims_doc, gate, email_text, pages_meta, args.lang)
     else:
         for name in ("answers_dir", "score", "reading"):
             if not getattr(args, name):

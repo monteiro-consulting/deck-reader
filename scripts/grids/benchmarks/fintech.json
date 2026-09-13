@@ -1,0 +1,17 @@
+{
+  "model": "fintech",
+  "version": "2026-09-13",
+  "rule": "Displayed next to the deck figure with source and date, never in the score. Empty value = no dated source found.",
+  "stages": {
+    "seed": [
+      {"id": "fin-seed-net-burn", "metric": {"en": "Median net burn, seed-stage fintech", "fr": "Burn net médian, fintech au seed"}, "question_ids": ["Q2", "F3"], "claim_types": ["runway"], "value": "120,000 USD per month, roughly 42 % higher than SaaS peers at the same stage, largely due to compliance and licensing costs", "source": "Qubit Capital, How Do Fintech Founders Manage Capital in 2026?", "url": "https://qubit.capital/blog/how-to-manage-fintech-capital-requirements", "date": "2026-01-02", "note": "Qubit cites icanpitch.com burn-rate benchmarks."},
+      {"id": "fin-seed-compliance-fines", "metric": {"en": "Compliance fines", "fr": "Amendes de conformité"}, "question_ids": ["Q2"], "claim_types": ["runway"], "value": "60 % of fintech companies paid at least 250,000 USD in compliance fines in the past year, mostly for insufficient transaction monitoring and customer due diligence", "source": "Qubit Capital, Fintech Due Diligence Checklist", "url": "https://qubit.capital/blog/fintech-due-diligence-checklist", "date": "2025-12-11", "note": ""},
+      {"id": "fin-seed-loss-rate", "metric": {"en": "Credit or fraud loss rate", "fr": "Taux de perte de crédit ou de fraude"}, "question_ids": ["Q3"], "claim_types": ["churn"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a loss rate benchmark found. Qubit's checklist cites 0.01 % fraud among live users as one company's figure, not a benchmark."}
+    ],
+    "series_a": [
+      {"id": "fin-a-compliance-fines", "metric": {"en": "Compliance fines", "fr": "Amendes de conformité"}, "question_ids": ["Q2"], "claim_types": ["runway"], "value": "60 % of fintech companies paid at least 250,000 USD in compliance fines in the past year, mostly for insufficient transaction monitoring and customer due diligence", "source": "Qubit Capital, Fintech Due Diligence Checklist", "url": "https://qubit.capital/blog/fintech-due-diligence-checklist", "date": "2025-12-11", "note": ""},
+      {"id": "fin-a-compliance-cost", "metric": {"en": "Compliance cost as a share of expenses", "fr": "Coût de conformité en part des charges"}, "question_ids": ["Q2"], "claim_types": ["runway", "gross_margin"], "value": "", "source": "", "url": "", "date": "", "note": "No dated series A source with a share of expenses found."},
+      {"id": "fin-a-loss-rate", "metric": {"en": "Credit or fraud loss rate", "fr": "Taux de perte de crédit ou de fraude"}, "question_ids": ["Q3"], "claim_types": ["churn"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a loss rate benchmark found."}
+    ]
+  }
+}
