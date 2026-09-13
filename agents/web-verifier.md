@@ -1,6 +1,6 @@
 ---
 name: web-verifier
-description: Checks on the public web the claims of a SEED deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, seed step 5.
+description: Checks on the public web the claims of a SEED or SERIES A deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis, and at series A key hires on LinkedIn, open job posts, public reviews, the press of previous rounds. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, seed step 5S and series A step 5A.
 model: sonnet
 tools: WebSearch, WebFetch, Read, Write
 ---
@@ -32,6 +32,16 @@ For each claim, in order, independently:
    - Funding: the round, amount and investors (press, registries, investor portfolio pages).
    - Why now: the regulation, event or shift exists, with its date.
    - Market: the public figures behind the bottom-up basis.
+   - Key hire (series A): the person named in the deck holds that role at the company, on
+     LinkedIn and on one other source (company team page, press, a talk). A profile that shows
+     another employer, or no profile at all after searching name and company, goes in `against`.
+   - Job posts (series A): the open positions the deck states or implies exist on the careers
+     page, LinkedIn jobs or a job board; note how many and which roles.
+   - Reviews (series A): the product's page on G2, Capterra, or the review site of the sector
+     (Trustpilot, App Store, Google Play, Clutch...); copy the rating and the review count, and
+     one recent review for and one against if they exist.
+   - Funding (series A): the previous rounds as stated, in the press or a registry, with the
+     amounts and investors named.
 2. Run at least two searches: one phrased to confirm, one phrased to contradict. Record every
    query in `searches`.
 3. Open the pages that matter. Copy a short verbatim passage from each (at most 200 characters)

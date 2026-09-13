@@ -27,6 +27,16 @@ MEANING = {
     "funding": "a past round, grant, investor name or amount",
     "why_now": "a regulation, event or technology shift, with its date",
     "market": "a market size figure and its basis",
+    "nrr": "net revenue retention, net dollar retention, expansion revenue over a period",
+    "pipeline": "pipeline value, weighted pipeline, deals by stage, coverage of the plan",
+    "sales_cycle": "average time from first contact to signature, by segment",
+    "founder_sales": "who closed the deals: share of sales closed by founders or by the sales team",
+    "gross_margin": "gross margin and what is in cost of revenue",
+    "concentration": "share of revenue or ARR made by the largest customers",
+    "burn_multiple": "burn multiple, net burn against net new ARR, efficiency score",
+    "key_hire": "a key hire named in the deck with a role (VP Sales, VP Engineering, CFO...)",
+    "job_posts": "open positions or a hiring plan the deck states",
+    "reviews": "public ratings, review counts or review-site claims (G2, Capterra...)",
     "other": "a checkable fact that fits none of the above",
 }
 

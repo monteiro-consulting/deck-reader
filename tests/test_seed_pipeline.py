@@ -277,11 +277,13 @@ class SeedScoreTest(unittest.TestCase):
         self.assertEqual(sorted(s["red_blocks"]), ["A", "B", "C", "D", "E", "F", "G"])
 
     def test_readable_grid_matches_json(self):
-        with open(os.path.join(HERE, "..", "skills", "deck-reader", "grids", "seed.md"), encoding="utf-8") as f:
-            md = f.read()
-        for _, q in grid_lib.all_questions(GRID):
-            self.assertIn(f"| {q['id']} |", md, f"{q['id']} missing from seed.md")
-        self.assertIn(GRID["version"], md)
+        for stage in ("seed", "series_a"):
+            grid = grid_lib.load_grid(stage)
+            with open(os.path.join(HERE, "..", "skills", "deck-reader", "grids", f"{stage}.md"), encoding="utf-8") as f:
+                md = f.read()
+            for _, q in grid_lib.all_questions(grid):
+                self.assertIn(f"| {q['id']} |", md, f"{q['id']} missing from {stage}.md")
+            self.assertIn(grid["version"], md, stage)
 
 
 class AnnexTextTest(unittest.TestCase):

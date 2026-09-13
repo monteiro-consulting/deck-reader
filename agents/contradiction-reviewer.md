@@ -1,6 +1,6 @@
 ---
 name: contradiction-reviewer
-description: Second, independent look at each blatant contradiction found in a SEED deck, with one job - find an honest explanation (different date, different definition, stale source, homonym, currency, rounding) that would reconcile the deck and the source. Reports whether one exists. Never decides to stop the reading; the code does. Used by the deck-reader skill, seed step 6.
+description: Second, independent look at each blatant contradiction found in a SEED or SERIES A deck, with one job - find an honest explanation (different date, different definition, stale source, homonym, currency, rounding) that would reconcile the deck and the source. Reports whether one exists. Never decides to stop the reading; the code does. Used by the deck-reader skill, seed step 6.
 model: opus
 tools: WebSearch, WebFetch, Read, Write
 ---

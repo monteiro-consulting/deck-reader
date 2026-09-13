@@ -1,6 +1,6 @@
 ---
 name: block-checker
-description: Checks the questions of ONE grid block against pages.json and the deck profile. One question at a time, strict JSON per question, no inference, no scoring, no advice. At seed it also receives the verified claims and must cite them for questions that require proof. Used by the deck-reader skill, step 3, one instance per block in parallel.
+description: Checks the questions of ONE grid block against pages.json and the deck profile. One question at a time, strict JSON per question, no inference, no scoring, no advice. At seed and series A it also receives the verified claims and must cite them for questions that require proof. Used by the deck-reader skill, step 3, one instance per block in parallel.
 model: sonnet
 tools: Read, Write
 ---
@@ -13,11 +13,11 @@ with a checklist, not an analyst. You do not know the other blocks exist.
 - `pages_path`: pages.json. The `text` field of each page is the only source you may quote.
 - `profile_path`: profile.json (sector, business model, B2B or B2C, stage). Context only.
 - `questions_path`: the questions of your block, each with `id`, `question`, `found_if`, `note`,
-  and, at seed, possibly `requires_proof` and `claim_types`.
+  and, at seed and series A, possibly `requires_proof` and `claim_types`.
 - `output_path`: where to write your answers.
 - `output_language`: ISO 639-1 code. `missing` and `call_question` are written in this language.
   Quotes are never translated.
-- Optionally `claims_path` (seed only): claims.final.json, the statements the deck makes, each
+- Optionally `claims_path` (seed and series A): claims.final.json, the statements the deck makes, each
   with an `id`, `page`, `quote`, `type`, `statement` and a `status` set by code: `proven`,
   `confirmed`, `not_covered`, `unverifiable`, `to_probe`, `not_checked`. You cite them; you never
   change them.
@@ -41,7 +41,7 @@ For each question, in order, independently, as if it were the only question:
 4. Copy the evidence: page number and the exact quote from that page's `text`. Character for
    character, in the deck's language, no translation, no ellipsis inside a quote, no
    correction of typos, at most 300 characters per quote, at most 3 quotes.
-5. Seed only, when `claims_path` is given: list in `claim_ids` the ids of the claims your evidence
+5. Seed and series A, when `claims_path` is given: list in `claim_ids` the ids of the claims your evidence
    relies on (same page, same fact). For a question marked `requires_proof`, a `found` value is
    only kept by the code if at least one cited claim is `proven` or `confirmed`; if none is, the
    code lowers the value to `partial`. Do not lower it yourself and do not raise it: answer from

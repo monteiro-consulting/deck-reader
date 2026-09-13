@@ -1,9 +1,18 @@
 {
   "name": "deck-reader",
-  "version": "0.2.0",
-  "description": "Reads a pitch deck (PDF) and writes a deck-completeness report next to it, with the grid of the stage the deck announces. Pre-seed: completeness of the deck. Seed: completeness, plus every figure the deck states checked against the annexes provided and public sources, and a draft email to the founder for what is missing. No verdict, no investment recommendation.",
+  "version": "0.3.0",
+  "description": "Reads a pitch deck (PDF) and writes a deck-completeness report next to it, with the grid of the stage the deck announces and the block of its business model. Pre-seed: completeness of the deck. Seed: completeness, plus every figure the deck states checked against the annexes provided and public sources, and a draft email to the founder for what is missing. Series A: the same with a fixed list of six required documents, net retention and unit economics as the heaviest blocks, and benchmarks shown next to every figure, never scored. No verdict, no investment recommendation.",
   "author": {
     "name": "Valentin Monteiro"
   },
-  "keywords": ["pitch-deck", "pre-seed", "seed", "due-diligence", "completeness", "investor"]
+  "keywords": [
+    "pitch-deck",
+    "pre-seed",
+    "seed",
+    "series-a",
+    "due-diligence",
+    "completeness",
+    "investor",
+    "benchmarks"
+  ]
 }

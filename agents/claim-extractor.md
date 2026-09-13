@@ -1,6 +1,6 @@
 ---
 name: claim-extractor
-description: Lists every verifiable statement a SEED deck makes - figures, named customers, competitors, founder track records, past funding, "why now" - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3.
+description: Lists every verifiable statement a SEED or SERIES A deck makes - figures, named customers, competitors, founder track records, past funding, "why now", and at series A NRR, pipeline, sales cycle, gross margin, concentration, burn multiple, founder-led sales, key hires, job posts, reviews - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3S and series A step 3A.
 model: sonnet
 tools: Read, Write
 ---
@@ -27,7 +27,11 @@ A statement that a document or a public source could confirm or contradict:
 - a founder's or hire's past role, employer, achievement, degree;
 - a past funding round, grant, investor name or amount;
 - a "why now": a regulation, a market event, a technology shift, with a date;
-- a market size with its basis.
+- a market size with its basis;
+- at series A (the types file says which types exist): net revenue retention, a pipeline figure
+  or its coverage of the plan, a sales cycle length, a gross margin, the share of ARR of the
+  largest customers, a burn multiple, the share of deals closed by the sales team rather than
+  the founders, a key hire named with a role, open positions, a rating or review count.
 
 Not a claim: an intention ("we will hire"), an opinion ("the market is huge"), a product
 description without a checkable fact, the ask itself ("we are raising 1.5M").

@@ -5,12 +5,16 @@ Usage:
     founder_email.py --kind none      --deck DECK.pdf --lang fr --out email.md
     founder_email.py --kind missing   --deck DECK.pdf --lang fr --gate gate.json --out email.md
     founder_email.py --kind leftovers --deck DECK.pdf --lang fr --gate gate.json --out email.md
+    founder_email.py --kind documents --deck DECK.pdf --lang fr --gate gate.json --out email.md
 
 none       the deck came without annexes: a short, generic request. No list on purpose: the
            deck without proof does the work, not the tool.
 missing    annexes were given but the key claims are not covered: one line per claim, with the
            page, what the deck states and the document that would back it.
 leftovers  the reading continued; these are the claims still not covered, same format.
+documents  series A: the fixed list has a hole. One line per missing document with what it must
+           contain and why it did not pass (absent, or too few months). Replaces the leftovers
+           email at series A.
 
 The draft is written to a file. The user sends it, or not. The tool never sends anything.
 """
@@ -29,6 +33,8 @@ T = {
         "missing": "Thank you for sending your deck and the attached documents. Some of the figures the deck states are not backed by what we received. Could you send the following?",
         "leftovers": "Thank you for sending your deck and the attached documents. We have read them. A few figures in the deck are still not backed by a document; could you send the following before our call?",
         "line": "- Page {page}: \"{statement}\". Document expected: {proof}.",
+        "documents": "Thank you for sending your deck and the attached documents. At series A we read every deck with the same six documents, and the following are missing or incomplete. Could you send them before we go further?",
+        "doc_line": "- {name}: {requirement} ({reason})",
         "close": "Thank you,",
         "note": "Draft written by the deck reader. Review before sending; the tool sends nothing.",
     },
@@ -39,6 +45,8 @@ T = {
         "missing": "Merci pour l'envoi de votre deck et des documents joints. Certains chiffres du deck ne sont pas appuyés par ce que nous avons reçu. Pourriez-vous nous envoyer les éléments suivants ?",
         "leftovers": "Merci pour l'envoi de votre deck et des documents joints. Nous les avons lus. Quelques chiffres du deck ne sont pas encore appuyés par un document ; pourriez-vous nous envoyer les éléments suivants avant notre échange ?",
         "line": "- Page {page} : « {statement} ». Document attendu : {proof}.",
+        "documents": "Merci pour l'envoi de votre deck et des documents joints. En série A nous lisons chaque deck avec les six mêmes documents, et les suivants manquent ou sont incomplets. Pourriez-vous nous les envoyer avant d'aller plus loin ?",
+        "doc_line": "- {name} : {requirement} ({reason})",
         "close": "Merci,",
         "note": "Brouillon rédigé par le lecteur de deck. À relire avant envoi ; l'outil n'envoie rien.",
     },
@@ -51,6 +59,16 @@ def draft(kind, deck, lang, to_request=None):
     lines = [t["subject"].format(deck=name), "", t["hello"], ""]
     if kind == "none":
         lines.append(t["none"])
+    elif kind == "documents":
+        lines.append(t["documents"])
+        lines.append("")
+        for item in to_request or []:
+            name = item.get("name", {})
+            req = item.get("requirement", {})
+            lines.append(t["doc_line"].format(
+                name=name.get(lang) or name.get("en") or item.get("document", "?"),
+                requirement=req.get(lang) or req.get("en") or "",
+                reason=item.get("reason", "")))
     else:
         lines.append(t[kind])
         lines.append("")
@@ -62,10 +80,10 @@ def draft(kind, deck, lang, to_request=None):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--kind", required=True, choices=["none", "missing", "leftovers"])
+    ap.add_argument("--kind", required=True, choices=["none", "missing", "leftovers", "documents"])
     ap.add_argument("--deck", required=True)
     ap.add_argument("--lang", default="en")
-    ap.add_argument("--gate", default=None, help="gate.json from seed_gate.py annexes (for missing / leftovers)")
+    ap.add_argument("--gate", default=None, help="gate.json from seed_gate.py annexes (missing / leftovers) or series_a_gate.py documents (documents)")
     ap.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     to_request = []

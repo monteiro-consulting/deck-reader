@@ -1,6 +1,6 @@
 ---
 name: annex-matcher
-description: For each claim of a SEED deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4.
+description: For each claim of a SEED or SERIES A deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model; at series A the monthly P&L, cohorts, CRM export, cap table, three-year model and top 10 contracts) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4S and series A step 4A.
 model: sonnet
 tools: Read, Write
 ---
