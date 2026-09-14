@@ -3,7 +3,7 @@
 **Block version: 2026-09-14.** Readable copy of `scripts/grids/models/saas.json`.
 
 The default model. The stage grids are written for it: no question is added, removed or
-reweighted at seed, series A, series B or series C. Only the benchmarks apply
+reweighted at seed, series A, series B, series C or series D. Only the benchmarks apply
 (`scripts/grids/benchmarks/saas.json`), displayed next to the deck figures, never in the score.
 
 | Stage | Remove | Reweight | Add | Documents |
@@ -12,6 +12,7 @@ reweighted at seed, series A, series B or series C. Only the benchmarks apply
 | Series A | none | none | none | base list, unchanged |
 | Series B | none | none | none | base list, unchanged |
 | Series C | none | none | none | base list, unchanged |
+| Series D | none | none | none | base list, unchanged |
 
 ## Series A: documents (first gate)
 
@@ -24,6 +25,10 @@ The document list is the base one of the series B grid: monthly P&L over 36 mont
 ## Series C: documents (first gate)
 
 The document list is the base one of the series C grid: monthly P&L by product and by geography over 48 months, audited accounts with the auditor's opinion for the last three fiscal years, cohorts by segment and by acquisition year over 36 months, CRM export with weighted pipeline and win/loss, sales roster over 24 months, billing export with list and net price over 24 months, cap table with the terms of every round and any debt agreement, three-year financial model with a zero-burn scenario, contracts of the top 20 customers, board decks or minutes with budget vs actual for the last eight quarters, org chart and headcount history over 36 months. Nothing removed, nothing added.
+
+## Series D: documents (first gate)
+
+The document list is the base one of the series D grid: monthly P&L by product and by geography over 60 months, audited accounts with the auditor's opinion and the accounting standard for the last three fiscal years, cohorts by segment and by acquisition year over 48 months, CRM export with weighted pipeline and win/loss, sales roster over 24 months, billing export with list price, net price, discount and contract dates over 36 months, cap table with the terms of every round, this round's term sheet if signed and any debt agreement, three-year financial model with the cash line of this round and a zero-burn scenario, contracts of the top 20 customers, board decks or minutes with budget vs actual and their issue dates for the last twelve quarters, org chart and headcount history over 48 months, the auditor's management letters for the last three fiscal years. Nothing removed, nothing added.
 
 ## Benchmarks (displayed, never scored)
 
@@ -62,6 +67,17 @@ trajectory (Sacks, 2020-04-23). Growth and FCF margin above 50M USD ARR on the I
 High Alpha 2024 pages, plan attainment, discount trend, win rate trend, zero-burn growth, shares
 of ARR from second products and from abroad, series C round size, exit comparables: no dated
 source, left empty.
+
+Series D: the series C set again, none of it being specific to a later round: ARR growth, net
+retention, gross margin and FCF margin at 50-100M and at 100M+ USD ARR (Bessemer, 2021-09-21);
+CAC payback around 20 months for private SaaS (CRV, 2026-07-16); Rule of 40 (Feld, 2015-02-03;
+ICONIQ, 2025); NDR 110-120 % (ICONIQ, 2025), public SaaS 110 % (High Alpha, 2024); magic number
+(Scale VP, 2010-04-20 and 2020-09-11); burn multiple bands and trajectory (Sacks, 2020-04-23).
+Forecast accuracy by band, backlog and the share of multi-year ARR, days to close and management
+letter findings, the price of a series D against the series C, zero-burn growth, shares of ARR
+from second products and from abroad, series D round size, exit comparables and the figures of
+the category's IPOs (read per deck from the filings, never a generic figure): no dated source,
+left empty.
 
 ## Sources
 

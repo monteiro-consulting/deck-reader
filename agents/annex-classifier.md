@@ -1,6 +1,6 @@
 ---
 name: annex-classifier
-description: For a deck of a stage with a required document list (series A, series B, series C), says which of the required documents of the stage and model each annex is, with a verbatim quote from the annex and the months or items it covers. Classifies, never judges; the code decides whether the list is complete. Used by the deck-reader skill, series A, series B and series C step 3A.
+description: For a deck of a stage with a required document list (series A, series B, series C, series D), says which of the required documents of the stage and model each annex is, with a verbatim quote from the annex and the months or items it covers. Classifies, never judges; the code decides whether the list is complete. Used by the deck-reader skill, series A, series B, series C and series D step 3A.
 model: sonnet
 tools: Read, Write
 ---
@@ -21,7 +21,8 @@ never assume what it contains. You read it from `required_path` and work with th
   - `id`: the type you write in your output (`pnl_24m`, `cap_table`, `bom_and_suppliers`, and
     at series B `pnl_36m`, `accounts_audited`, `sales_roster`, `board_pack_4q`, `org_chart`, at
     series C `pnl_48m`, `accounts_audited_3y`, `billing_export_24m`, `cap_table_terms`,
-    `board_pack_8q` ...);
+    `board_pack_8q`, at series D `pnl_60m`, `board_pack_12q`, `billing_export_36m`,
+    `management_letters_3y` ...);
   - `name` and `requirement`: what the document is and what it must contain, in English and
     French; the `requirement` is your classification criterion;
   - `min_months`: when not null, the document is time-based and you count its months;
@@ -45,7 +46,8 @@ in order:
    - `min_months` not null: `months_covered` is the number of distinct monthly columns or rows
      you can see;
    - `min_count` not null: `items_covered` is the number of distinct items (contracts, patents,
-     filings, fiscal years of audited accounts, quarterly board decks) you can see;
+     filings, fiscal years of audited accounts, quarterly board decks, management letters) you
+     can see;
    - neither: leave both null.
    Write `0` when you cannot count; never estimate.
 4. One annex, one type. If a workbook holds several documents (a P&L sheet and a cap table

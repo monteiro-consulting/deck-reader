@@ -47,8 +47,8 @@ Allowed values:
   revenue for years), `other`, `unknown`. `other` and `unknown` are read as `saas` by the
   scripts, which apply no model block.
 - `customer_type`: `B2B`, `B2C`, `B2B2C`, `unknown`.
-- `announced_stage`: `pre-seed`, `seed`, `series-a`, `series-b`, `series-c-or-later`, `other`,
-  `not_stated`.
+- `announced_stage`: `pre-seed`, `seed`, `series-a`, `series-b`, `series-c`, `series-d-or-later`,
+  `other`, `not_stated`.
 
 ## Rules
 
@@ -56,9 +56,10 @@ Allowed values:
   "série A", "Series B", "série B", "amorçage", "pré-amorçage", "angel round", "friends and
   family" ... Map wording to the allowed values ("pré-amorçage", "angel round", "friends and
   family" are `pre-seed`; "amorçage" alone is `seed`; "series A", "série A" are `series-a`;
-  "series B", "série B" are `series-b`; "series C", "série C", "series D", "série D", "growth
-  round" and every later round are `series-c-or-later`, which the scripts read with the series C
-  grid). If no page states a stage, write `not_stated`. Never infer a stage from
+  "series B", "série B" are `series-b`; "series C", "série C" are `series-c`, which the scripts
+  read with the series C grid; "series D", "série D", "series E", "growth round", "pre-IPO",
+  "late stage" and every later round are `series-d-or-later`, which the scripts read with the
+  series D grid). If no page states a stage, write `not_stated`. Never infer a stage from
   the amount raised, the traction, or the tone.
 - `model_type` follows what the deck says about how money is made. A commission or take rate on
   transactions between two sides is `marketplace`. A subscription to software sold to companies

@@ -94,7 +94,7 @@ def verify(claims_doc, matches_doc, annexes_doc, grid):
         out["annex_evidence"] = list(m.get("evidence") or [])
         out["annex_value"] = found_value
         out["annex_note"] = m.get("note", "")
-        # A plan vs actual claim (series C) carries both figures: the plan read in the board pack
+        # A plan vs actual claim (series C, series D) carries both figures: the plan read in the board pack
         # and the actual read in the P&L. Kept as numbers for the report table; never scored.
         for key in ("plan_value", "actual_value"):
             if m.get(key) is not None:

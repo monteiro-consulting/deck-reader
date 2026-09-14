@@ -207,6 +207,60 @@
           }
         ]
       }
+    },
+    "series_d": {
+      "remove": ["C5", "F3"],
+      "reweight": {
+        "blocks": {},
+        "questions": {}
+      },
+      "add": [
+        {
+          "block": "C",
+          "questions": [
+            {
+              "id": "O1",
+              "question": {"en": "Contribution margin per order, after shipping and returns, over 60 months?", "fr": "Marge de contribution par commande, après livraison et retours, sur 60 mois ?"},
+              "found_if": "Net sales per order minus goods, shipping, payment fees, returns and refunds, month by month over 60 months, matching the P&L and three years of audited accounts.",
+              "note": "A gross margin that stops at the goods = partial. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin", "revenue", "audited_figure"]
+            },
+            {
+              "id": "O2",
+              "question": {"en": "Customer acquisition cost by channel and by country, paid and blended, and its payback?", "fr": "CAC par canal et par pays, payant et mixte, et son délai de récupération ?"},
+              "found_if": "A CAC per channel and per country, paid and blended, the spend and the orders behind it, and the months of contribution margin needed to recover it, from the orders export.",
+              "note": "A blended CAC alone = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition", "geo_share"]
+            }
+          ]
+        },
+        {
+          "block": "E",
+          "questions": [
+            {
+              "id": "O3",
+              "question": {"en": "What share of customers order again within 60 days, by cohort vintage?", "fr": "Quelle part des clients recommande sous 60 jours, par millésime de cohorte ?"},
+              "found_if": "A 60-day repeat purchase rate by monthly acquisition cohort over 48 months or more, with the cohorts of each acquisition year side by side.",
+              "note": "Older cohorts below newer ones are a question for the call. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "sales_roster", "top20_contracts"],
+        "add": [
+          {
+            "id": "orders_export_60m",
+            "name": {"en": "Orders export over 60 months", "fr": "Export des commandes sur 60 mois"},
+            "requirement": {"en": "Every order with revenue, cost of goods, shipping, returns, discounts, and marketing spend by channel and by country, month by month.", "fr": "Chaque commande avec son revenu, le coût des marchandises, la livraison, les retours, les remises et les dépenses marketing par canal et par pays, mois par mois."},
+            "min_months": 60
+          }
+        ]
+      }
     }
   }
 }

@@ -65,7 +65,13 @@ MEANING = {
     "audit_opinion": "the auditor's opinion on the accounts of a fiscal year, qualified or not",
     "controls_certification": "a SOC 2 report, an ISO 27001 certificate or another controls certification, with its date",
     "competitor_funding": "a round raised by a competitor, with its amount or date",
-    "exit_comparable": "a named possible acquirer, an acquisition in the category, or a listed comparable",
+    "exit_comparable": "a named possible acquirer, an acquisition in the category, a listed comparable, or an IPO of the category with a figure its filing states at IPO",
+    "backlog": "contracted revenue not yet recognised (backlog, RPO), or the share of ARR under multi-year contracts",
+    "round_price": "the pre-money or post-money valuation of this round or of a previous one, or the price per share",
+    "round_purpose": "what the round precedes or funds: profitability, an IPO window, an acquisition programme, a sale, or another round planned",
+    "acquired_company": "a company acquired or being acquired, with its date, consideration, ARR at closing or today, or the team retained",
+    "management_letter": "a control deficiency, significant deficiency or material weakness reported by the auditor, or the statement that none was",
+    "close_cycle": "the days to close a month or a quarter, or the date a board pack was issued after the end of its quarter",
     "other": "a checkable fact that fits none of the above",
 }
 

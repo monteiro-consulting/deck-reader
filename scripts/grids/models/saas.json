@@ -15,6 +15,7 @@
     "seed": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
     "series_a": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
     "series_b": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
-    "series_c": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []}
+    "series_c": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
+    "series_d": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []}
   }
 }

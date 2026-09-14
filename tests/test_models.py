@@ -16,8 +16,9 @@ SEED = grid_lib.load_grid("seed")
 SERIES_A = grid_lib.load_grid("series_a")
 SERIES_B = grid_lib.load_grid("series_b")
 SERIES_C = grid_lib.load_grid("series_c")
+SERIES_D = grid_lib.load_grid("series_d")
 PRESEED = grid_lib.load_grid("preseed")
-STAGES_WITH_DOCUMENTS = (SERIES_A, SERIES_B, SERIES_C)
+STAGES_WITH_DOCUMENTS = (SERIES_A, SERIES_B, SERIES_C, SERIES_D)
 MODELS_MD = os.path.join(HERE, "..", "skills", "deck-reader", "grids", "models")
 
 
@@ -183,9 +184,9 @@ class AssemblyTest(unittest.TestCase):
     def test_every_model_assembles_at_seed_series_a_and_series_b(self):
         for m in grid_lib.known_models():
             model = grid_lib.load_model(m)
-            self.assertEqual(set(model["stages"]), {"seed", "series_a", "series_b", "series_c"}, m)
+            self.assertEqual(set(model["stages"]), {"seed", "series_a", "series_b", "series_c", "series_d"}, m)
             self.assertEqual(model["version"], "2026-09-14", m)
-            for stage in (SEED, SERIES_A, SERIES_B, SERIES_C):
+            for stage in (SEED, SERIES_A, SERIES_B, SERIES_C, SERIES_D):
                 g = grid_lib.effective_grid(stage, {"model_type": m})
                 self.assertEqual(len(ids(g)), len(set(ids(g))), f"{m} {stage['stage']}: duplicate ids")
                 self.assertEqual(g["applied_model"], m)
@@ -267,6 +268,72 @@ class AssemblyTest(unittest.TestCase):
         self.assertEqual(docs["saas"]["accounts_audited_3y"]["min_count"], 3)
         self.assertEqual(docs["saas"]["board_pack_8q"]["min_count"], 8)
         self.assertEqual(grid_lib.effective_grid(SERIES_C, {"model_type": "saas"})["applied_model_questions"], "")
+
+    def test_document_lists_per_model_at_series_d(self):
+        base = ["pnl_60m", "accounts_audited_3y", "cohorts_48m", "crm_pipeline", "sales_roster", "billing_export_36m",
+                "cap_table_terms", "model_3y", "top20_contracts", "board_pack_12q", "org_chart", "management_letters_3y"]
+        no_sales = ["pnl_60m", "accounts_audited_3y", "cohorts_48m", "billing_export_36m", "cap_table_terms", "model_3y",
+                    "board_pack_12q", "org_chart", "management_letters_3y"]
+        lists = {m: doc_ids(grid_lib.effective_grid(SERIES_D, {"model_type": m})) for m in grid_lib.known_models()}
+        self.assertEqual(lists["saas"], base)
+        self.assertEqual(lists["marketplace"], base + ["gmv_60m"])
+        self.assertEqual(lists["consumer"], no_sales + ["product_analytics_48m"])
+        self.assertEqual(lists["ecommerce"], no_sales + ["orders_export_60m"])
+        self.assertEqual(lists["hardware"], base + ["bom_and_suppliers", "inventory_48m"])
+        self.assertEqual(lists["fintech"], base + ["licence", "risk_book_60m"])
+        self.assertEqual(lists["biotech"], ["pnl_60m", "accounts_audited_3y", "cap_table_terms", "model_3y", "board_pack_12q", "org_chart",
+                                            "management_letters_3y", "clinical_dossier", "ip_schedule"])
+        docs = {m: {d["id"]: d for d in grid_lib.required_documents(grid_lib.effective_grid(SERIES_D, {"model_type": m}))} for m in lists}
+        self.assertEqual(docs["marketplace"]["gmv_60m"]["min_months"], 60)
+        self.assertEqual(docs["consumer"]["product_analytics_48m"]["min_months"], 48)
+        self.assertEqual(docs["ecommerce"]["orders_export_60m"]["min_months"], 60)
+        self.assertIsNone(docs["hardware"]["bom_and_suppliers"]["min_months"])
+        self.assertEqual(docs["hardware"]["inventory_48m"]["min_months"], 48)
+        self.assertIsNone(docs["fintech"]["licence"]["min_months"])
+        self.assertEqual(docs["fintech"]["risk_book_60m"]["min_months"], 60)
+        self.assertIsNone(docs["biotech"]["clinical_dossier"]["min_months"])
+        self.assertIsNone(docs["biotech"]["ip_schedule"]["min_months"])
+        self.assertEqual(docs["saas"]["accounts_audited_3y"]["min_count"], 3)
+        self.assertEqual(docs["saas"]["board_pack_12q"]["min_count"], 12)
+        self.assertEqual(docs["saas"]["management_letters_3y"]["min_count"], 3)
+        self.assertEqual(grid_lib.effective_grid(SERIES_D, {"model_type": "saas"})["model_block"]["documents"], {"removed": [], "added": []})
+        self.assertEqual(grid_lib.effective_grid(SERIES_D, {"model_type": "saas"})["applied_model_questions"], "")
+
+    def test_examples_from_the_spec_at_series_d(self):
+        cons = grid_lib.effective_grid(SERIES_D, {"model_type": "consumer"})
+        for qid in ("B2", "C5", "F3"):
+            self.assertNotIn(qid, ids(cons), qid)
+        self.assertTrue({"N1", "N2", "N3"} <= set(ids(cons)))
+        self.assertEqual([q["id"] for q in block(cons, "D")["questions"]], ["D1", "D2", "D3", "D4", "D5"])
+        self.assertEqual(next(q for _, q in grid_lib.all_questions(cons) if q["id"] == "B1")["weight"], 1)
+        bio = grid_lib.effective_grid(SERIES_D, {"model_type": "biotech"})
+        for bid in ("B", "D", "E"):
+            self.assertEqual(block(bio, bid)["weight"], 0, bid)
+        self.assertEqual(block(bio, "C")["weight"], 1)
+        self.assertEqual(block(bio, "R")["weight"], 3)
+        self.assertEqual([q["id"] for q in block(bio, "R")["questions"]], ["R1", "R2", "R3"])
+        self.assertIn("since the series C", next(q for _, q in grid_lib.all_questions(bio) if q["id"] == "R1")["question"]["en"])
+        for qid in ("C5", "F3", "F4"):
+            self.assertNotIn(qid, ids(bio), qid)
+        self.assertIn("D1", ids(bio))
+        hw = grid_lib.effective_grid(SERIES_D, {"model_type": "hardware"})
+        self.assertEqual(block(hw, "C")["weight"], 6)
+        self.assertEqual(block(hw, "C")["weight"], 2 * block(SERIES_D, "C")["weight"])
+        self.assertTrue({"P1", "P2", "P3"} <= set(ids(hw)))
+        eco = grid_lib.effective_grid(SERIES_D, {"model_type": "ecommerce"})
+        self.assertTrue({"O1", "O2"} <= {q["id"] for q in block(eco, "C")["questions"]})
+        self.assertIn("O3", [q["id"] for q in block(eco, "E")["questions"]])
+        self.assertIn("F4", ids(eco))  # pricing power stays: the billing export is on the list
+        for qid in ("C5", "F3"):
+            self.assertNotIn(qid, ids(eco), qid)
+        fin = grid_lib.effective_grid(SERIES_D, {"model_type": "fintech"})
+        self.assertEqual(block(fin, "Q")["weight"], 2)
+        self.assertEqual([q["id"] for q in block(fin, "Q")["questions"]], ["Q1", "Q2", "Q3", "Q4"])
+        self.assertIn("over 60 months", next(q for _, q in grid_lib.all_questions(fin) if q["id"] == "Q4")["question"]["en"])
+        mkt = grid_lib.effective_grid(SERIES_D, {"model_type": "marketplace"})
+        self.assertEqual([q["id"] for q in block(mkt, "B")["questions"]][-4:], ["M1", "M2", "M3", "M4"])
+        self.assertIn("over 60 months", next(q for _, q in grid_lib.all_questions(mkt) if q["id"] == "M1")["question"]["en"])
+        self.assertEqual(ids(grid_lib.effective_grid(SERIES_D, {"model_type": "saas"})), ids(SERIES_D))
 
     def test_examples_from_the_spec_at_series_c(self):
         cons = grid_lib.effective_grid(SERIES_C, {"model_type": "consumer"})
@@ -365,18 +432,26 @@ class AssemblyTest(unittest.TestCase):
         for bid in ("B", "D", "E"):
             self.assertNotIn(bid, s["red_blocks"], bid)
         self.assertEqual(sorted(s["red_flags"]), ["G1", "H2"])
+        # Series D biotech: B, D and E are information only (B4, D1, E2 do not fire); the round's reason (H3) does.
+        g = grid_lib.effective_grid(SERIES_D, {"model_type": "biotech"})
+        answers = [{"question_id": q, "value": "absent", "evidence": [], "missing": "", "call_question": ""} for q in ids(g)]
+        s = score.compute(g, answers, {"customer_type": "B2B", "model_type": "biotech"})
+        for bid in ("B", "D", "E"):
+            self.assertNotIn(bid, s["red_blocks"], bid)
+        self.assertIn("R", s["red_blocks"])
+        self.assertEqual(sorted(s["red_flags"]), ["G1", "H2", "H3"])
 
 
 class BenchmarkTest(unittest.TestCase):
     def test_every_benchmark_has_source_and_date_or_is_empty(self):
         for m in grid_lib.known_models():
-            for stage in ("seed", "series_a", "series_b", "series_c"):
+            for stage in ("seed", "series_a", "series_b", "series_c", "series_d"):
                 bms = grid_lib.load_benchmarks(m, stage)
                 self.assertTrue(bms, f"{m} {stage}: no benchmark list")
                 for b in bms:
                     if b.get("value"):
                         self.assertTrue(b.get("source"), f"{b['id']}: value without source")
-                        if stage in ("series_b", "series_c"):  # the series B and C guardrail: a value needs a dated source
+                        if stage in ("series_b", "series_c", "series_d"):  # the series B, C and D guardrail: a value needs a dated source
                             self.assertTrue(b.get("date"), f"{b['id']}: value without a date")
                     if b.get("date"):
                         self.assertTrue(b.get("source"), f"{b['id']}: date without source")
@@ -415,6 +490,47 @@ class BenchmarkTest(unittest.TestCase):
             self.assertEqual(saas[empty]["value"], "", empty)
         self.assertIn("all-c-exit-comparables", {b["id"] for b in grid_lib.load_benchmarks("fintech", "series_c")})
 
+    def test_series_d_benchmarks_point_at_series_d_questions(self):
+        for m in grid_lib.known_models():
+            g = grid_lib.effective_grid(SERIES_D, {"model_type": m})
+            known = set(ids(g))
+            for b in grid_lib.load_benchmarks(m, "series_d"):
+                self.assertNotIn("-c-", b["id"], f"{m}: series C id {b['id']} in the series D list")
+                for qid in b.get("question_ids") or []:
+                    self.assertIn(qid, known, f"{m}: benchmark {b['id']} points at {qid}, not in the series D {m} grid")
+                for t in b.get("claim_types") or []:
+                    self.assertIn(t, SERIES_D["claim_types"], f"{b['id']}: unknown claim type {t}")
+        saas = {b["id"]: b for b in grid_lib.load_benchmarks("saas", "series_d")}
+        # The series C values are shown again, identical, with their sources and dates.
+        c = {b["id"]: b for b in grid_lib.load_benchmarks("saas", "series_c")}
+        for cid, cb in c.items():
+            if cid in ("all-c-round-size", "saas-c-plan-attainment", "all-c-exit-comparables"):
+                continue  # replaced at series D by all-d-round-size, saas-d-forecast-accuracy and all-d-ipo-comparables
+            db = saas[cid.replace("-c-", "-d-", 1)]
+            for key in ("value", "source", "url", "date"):
+                self.assertEqual(db[key], cb[key], f"{cid}: {key} differs at series D")
+        self.assertIn("57 %", saas["saas-d-growth-bessemer"]["value"])
+        self.assertEqual(saas["saas-d-fcf-margin-bessemer"]["date"], "2021-09-21")
+        # The series C question ids that moved: D2 (discounts) to F4, D3 (win rate) to F3, D4 to D3, H5 to H6.
+        self.assertEqual(saas["saas-d-discount-trend"]["question_ids"], ["F4"])
+        self.assertEqual(saas["saas-d-win-rate"]["question_ids"], ["F3", "F2"])
+        self.assertEqual(saas["saas-d-product-share"]["question_ids"], ["D3"])
+        self.assertEqual(saas["saas-d-geo-share"]["question_ids"], ["D5"])
+        self.assertEqual(saas["all-d-ipo-comparables"]["question_ids"], ["H6"])
+        self.assertEqual(saas["saas-d-forecast-accuracy"]["question_ids"], ["D1", "H2"])
+        for dup in ("saas-d-plan-attainment", "all-d-exit-comparables"):  # replaced by the two entries above
+            self.assertNotIn(dup, saas, dup)
+        for empty in ("saas-d-forecast-accuracy", "saas-d-backlog", "saas-d-close-cycle", "saas-d-round-price", "all-d-round-size", "all-d-ipo-comparables",
+                      "saas-d-forecast-accuracy", "saas-d-discount-trend", "saas-d-zero-burn-growth", "all-d-ipo-comparables"):
+            self.assertEqual(saas[empty]["value"], "", empty)
+            self.assertTrue(saas[empty]["note"], empty)
+        self.assertNotIn("all-c-round-size", saas)
+        self.assertNotIn("all-d-round-size".replace("-d-", "-c-"), saas)
+        generic = {b["id"] for b in grid_lib.load_benchmarks("biotech", "series_d")}
+        for gid in ("all-d-burn-multiple-sacks", "all-d-round-size", "all-d-ipo-comparables"):
+            self.assertIn(gid, generic, gid)
+        self.assertNotIn("saas-d-growth-bessemer", generic)
+
     def test_generic_saas_benchmarks_are_shown_for_other_models(self):
         ids_hw = {b["id"] for b in grid_lib.load_benchmarks("hardware", "series_a")}
         self.assertIn("all-a-burn-multiple-sacks", ids_hw)
@@ -449,7 +565,7 @@ class ReadableCopyTest(unittest.TestCase):
 
 class RenderGridTest(unittest.TestCase):
     def test_renders_every_stage_and_model_in_both_languages(self):
-        for stage in ("seed", "series_a", "series_b", "series_c"):
+        for stage in ("seed", "series_a", "series_b", "series_c", "series_d"):
             for m in grid_lib.known_models():
                 for lang in ("en", "fr"):
                     text = render_grid.render(stage, m, lang)
@@ -477,7 +593,7 @@ class RenderGridTest(unittest.TestCase):
         self.assertIn("| accounts_audited |", text)
 
     def test_series_c_render_lists_the_model_documents(self):
-        text = render_grid.render("growth round", "biotech")
+        text = render_grid.render("series_c", "biotech")  # "growth round" now routes to series D
         self.assertIn("# Grid: series C, Biotech", text)
         self.assertIn("**Removed questions**: C5, D2, D3, D6", text)
         self.assertIn("**Removed documents**: cohorts_36m, crm_pipeline, sales_roster, billing_export_24m, top20_contracts", text)
@@ -488,6 +604,26 @@ class RenderGridTest(unittest.TestCase):
         self.assertIn("| board_pack_8q |", fr)
         self.assertIn("8 éléments", fr)
         self.assertIn("### D. Position et durabilité, poids 3", fr)
+
+    def test_series_d_render_lists_the_model_documents(self):
+        text = render_grid.render("growth round", "biotech")  # series D covers every later round
+        self.assertIn("# Grid: series D, Biotech", text)
+        self.assertIn("**Removed questions**: C5, F3, F4", text)
+        self.assertIn("**Reweighted blocks**: B → 0, D → 0, E → 0, C → 1", text)
+        self.assertIn("**Removed documents**: cohorts_48m, crm_pipeline, sales_roster, billing_export_36m, top20_contracts", text)
+        self.assertIn("**Added documents**: clinical_dossier, ip_schedule", text)
+        self.assertIn("| management_letters_3y |", text)
+        self.assertIn("| board_pack_12q |", text)
+        self.assertIn("12 items", text)
+        self.assertIn("since the series C", text)
+        self.assertNotIn("| billing_export_36m |", text)
+        self.assertIn("| H1 | Series D round size |", text)
+        self.assertIn("| H6 | IPO filings of the category |", text)
+        fr = render_grid.render("série D", "saas", "fr")
+        self.assertIn("# Grille : série D, SaaS", fr)
+        self.assertIn("| pnl_60m |", fr)
+        self.assertIn("| management_letters_3y |", fr)
+        self.assertIn("12 éléments", fr)
 
     def test_unknown_model_falls_back_to_saas(self):
         self.assertIn("SaaS", render_grid.render("seed", "spacetech"))

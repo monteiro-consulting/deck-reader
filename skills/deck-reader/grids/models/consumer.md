@@ -12,6 +12,7 @@ and Andrew Chen's magic metrics; revenue questions lose weight, the sales cycle 
 | Series A | B2 (ACV by segment), C3 (sales cycle) | B1 (ARR) to weight 1 | N1 to N3 in block B | remove crm_pipeline, top10_contracts; add product_analytics_12m |
 | Series B | B2 (ACV by segment), C5 (magic number), C6 (pipeline), D4, D5, D6 (sales team) | B1 (ARR) to weight 1 | N1 to N3 in block B | remove crm_pipeline, sales_roster, top20_contracts; add product_analytics_24m |
 | Series C | B2 (ACV by segment), C5 (magic number), D3 (win rate trend), D6 (deals without a founder) | B1 (ARR) to weight 1 | N1 to N3 in block B | remove crm_pipeline, sales_roster, top20_contracts; add product_analytics_36m |
+| Series D | B2 (ACV by segment), C5 (magic number), F3 (win rate trend) | B1 (ARR) to weight 1 | N1 to N3 in block B | remove crm_pipeline, sales_roster, top20_contracts; add product_analytics_48m |
 
 ## Seed: added to block B (weight 3)
 
@@ -79,6 +80,29 @@ Removed from the base list: `crm_pipeline` (CRM export with weighted pipeline, o
 
 The document list of the first gate is the one of the stage grid (`scripts/grids/series_c.json`) with the changes above; the deck never adjusts it.
 
+## Series D: added to block B (weight 2)
+
+| # | Question | Found if | Note |
+|---|---|---|---|
+| N1 | Daily active users over monthly active users, over 60 months? | Both counts with the definition of 'active', and the monthly ratio over 60 months, from an analytics export | *proof*. Benchmark shown next to the figure |
+| N2 | Do the cohort curves flatten, and do older cohorts hold next to newer ones? | Day 1, 7 and 30 retention by monthly cohort over 48 months or more, with the day where the curves flatten, and the cohorts of each acquisition year side by side | *proof*. A curve that still falls at day 30 = partial. Older cohorts below newer ones are a question for the call |
+| N3 | What share of new users is organic, and what is the paid CAC by country over 36 months? | The share of new users from organic, referral or word of mouth, and the cost per paid user by country, month by month over 36 months, with the method | *proof*. All paid = partial |
+
+At series D the block also removes the win rate trend (F3), read in the CRM win/loss, which the
+consumer list does not ask for. Predictability and exit readiness (D1 to D5) is untouched: the
+plan against actual, the reporting, the second act, the acquisitions and the geography are read
+in documents the consumer list keeps.
+
+## Series D: documents (first gate)
+
+Removed from the base list: `crm_pipeline` (CRM export with weighted pipeline, owner, and win/loss with competitor), `sales_roster` (Sales roster with quota attainment over 24 months), `top20_contracts` (Signed contracts of the top 20 customers).
+
+| Id | Document | Requirement | Minimum |
+|---|---|---|---|
+| product_analytics_48m | Product analytics export over 48 months | Monthly and daily active users, DAU over MAU, retention by acquisition cohort, organic share of new users and paid CAC by country, month by month, from the analytics tool. | 48 months |
+
+The document list of the first gate is the one of the stage grid (`scripts/grids/series_d.json`) with the changes above; the deck never adjusts it.
+
 ## Benchmarks (displayed, never scored)
 
 Social apps (a16z, 2023-03-03): DAU/MAU ok 25 / good 40 / great 50 %+; day 1/7/30 retention
@@ -91,6 +115,9 @@ The same a16z and Andrew Chen figures are shown at series B, none of them being 
 paid CAC by country stays empty.
 
 Series C: the same a16z and Andrew Chen figures are shown again, next to N1 to N3, B3 and E1 to
+E3, none of them being stage-specific; paid CAC by country stays empty.
+
+Series D: the same a16z and Andrew Chen figures are shown again, next to N1 to N3, B3 and E1 to
 E3, none of them being stage-specific; paid CAC by country stays empty.
 
 ## Sources

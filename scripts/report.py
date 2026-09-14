@@ -13,7 +13,7 @@ Usage (reading stopped):
               --abort-kind stage|no_annexes|insufficient_annexes|contradiction --abort-reason "..."
               [--claims ... --annexes ... --gate ... --email ...]
 
---grid is a stage name (preseed, seed, series_a, series_b, series_c) or a path. --lang selects the labels. Shipped: en, fr.
+--grid is a stage name (preseed, seed, series_a, series_b, series_c, series_d) or a path. --lang selects the labels. Shipped: en, fr.
 Any other code falls back to English labels; the writer's prose (reading.md) is in whatever
 language the orchestrator requested. Grid question wording follows the same rule.
 """
@@ -27,7 +27,7 @@ import sys
 from claims_lib import to_number
 from grid_lib import GridError, effective_grid, load_benchmarks, load_grid, stage_key
 
-STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b", "series-c")
+STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b", "series-c", "series-d")
 
 # How a grid is named in the disclaimer of a stage that carries a required document list. Any
 # stage whose grid has annex_gate.required_documents uses disclaimer_documents with this name;
@@ -36,6 +36,7 @@ GRID_NAMES = {
     "series-a": {"en": "series A grid", "fr": "grille série A"},
     "series-b": {"en": "series B grid", "fr": "grille série B"},
     "series-c": {"en": "series C grid", "fr": "grille série C"},
+    "series-d": {"en": "series D grid", "fr": "grille série D"},
 }
 
 LABELS = {
@@ -139,6 +140,19 @@ LABELS = {
         "gap_pct": "Gap",
         "pva_summary": "{metric}: average gap {avg} over {n} quarter(s)",
         "pva_missed": ", {k} quarter(s) missed",
+        "pva_band": ", {k} within ±{b} %",
+        "pva_beyond": ", {k} beyond ±{b} %",
+        "preference_stack": "The preference stack, as the terms state it",
+        "preference_stack_note": "Every round, secondary sale, tender offer and debt line the deck states, one row each, with the figure stated, the status set by code and the backing found in the cap table, the terms or the press. Nothing is summed, nothing is valued. Displayed, never scored.",
+        "preference_stack_none": "No round, preference, secondary sale or debt line was stated in the deck.",
+        "round_or_instrument": "Round or instrument",
+        "figure": "Figure",
+        "ipo_comparables": "The company next to the last IPOs of its category",
+        "ipo_comparables_note": "The comparables the deck names, with the figure their IPO filing states, next to the deck's own latest figure for the same metric when a proven or confirmed claim gives one. Facts side by side; no multiple, no valuation, no ranking. Displayed, never scored.",
+        "ipo_comparables_none": "No IPO filing of the category was cited by the deck with a metric at IPO.",
+        "comparable": "Comparable",
+        "at_ipo": "At IPO (filing)",
+        "deck_figure": "Deck",
     },
     "fr": {
         "title": "Lecture de complétude du deck",
@@ -240,6 +254,19 @@ LABELS = {
         "gap_pct": "Écart",
         "pva_summary": "{metric} : écart moyen {avg} sur {n} trimestre(s)",
         "pva_missed": ", {k} trimestre(s) manqué(s)",
+        "pva_band": ", {k} à moins de ±{b} %",
+        "pva_beyond": ", {k} au-delà de ±{b} %",
+        "preference_stack": "La pile de préférences, telle que les termes l'énoncent",
+        "preference_stack_note": "Chaque tour, cession secondaire, offre de rachat et ligne de dette que le deck avance, une ligne chacun, avec le chiffre avancé, le statut fixé par le code et l'appui trouvé dans la table de capitalisation, les termes ou la presse. Rien n'est additionné, rien n'est valorisé. Affiché, jamais noté.",
+        "preference_stack_none": "Aucun tour, préférence, cession secondaire ou ligne de dette n'est avancé par le deck.",
+        "round_or_instrument": "Tour ou instrument",
+        "figure": "Chiffre",
+        "ipo_comparables": "L'entreprise à côté des dernières introductions en bourse de sa catégorie",
+        "ipo_comparables_note": "Les comparables que le deck nomme, avec le chiffre que leur prospectus d'introduction énonce, à côté du dernier chiffre du deck pour le même indicateur quand une affirmation prouvée ou confirmée en donne un. Des faits côte à côte ; ni multiple, ni valorisation, ni classement. Affiché, jamais noté.",
+        "ipo_comparables_none": "Aucun prospectus d'introduction de la catégorie n'est cité par le deck avec un indicateur à l'introduction.",
+        "comparable": "Comparable",
+        "at_ipo": "À l'introduction (prospectus)",
+        "deck_figure": "Deck",
     },
 }
 
@@ -481,6 +508,7 @@ def plan_vs_actual_section(lab, grid, claims_doc, lang):
     if not by_key:
         return lines + [lab["plan_vs_actual_none"], ""]
     periods = sorted({p for p, _ in by_key})[-int(spec.get("quarters") or 8):]
+    bands = sorted(float(b) for b in (spec.get("bands_percent") or []))
     lines += [f"| {lab['quarter']} | {lab['metric']} | {lab['plan']} | {lab['actual']} | {lab['gap_pct']} | # |", "|---|---|---:|---:|---:|---|"]
     stats = {m["id"]: {"gaps": [], "missed": 0} for m in metrics}
     for p in periods:
@@ -506,7 +534,70 @@ def plan_vs_actual_section(lab, grid, claims_doc, lang):
         line = "- " + lab["pva_summary"].format(metric=pick(m.get("name"), lang), avg=f"{sum(gaps) / len(gaps):+.1f} %", n=len(gaps))
         if m.get("missed_if"):
             line += lab["pva_missed"].format(k=stats[m["id"]]["missed"])
+        # The distribution of the quarters by absolute gap (series D): within each band, then
+        # beyond the widest one. Counted, never judged.
+        for b in bands:
+            line += lab["pva_band"].format(k=sum(1 for g in gaps if abs(g) <= b), b=fmt_num(b))
+        if bands:
+            line += lab["pva_beyond"].format(k=sum(1 for g in gaps if abs(g) > bands[-1]), b=fmt_num(bands[-1]))
         lines.append(line)
+    lines.append("")
+    return lines
+
+
+def preference_stack_section(lab, grid, claims_doc, lang):
+    """The preference stack of a grid that asks for one (grid["report"]["preference_stack"]).
+
+    Layout only: one row per claim of the listed types, the round or instrument, the figure the
+    deck states, the status set by code and the backing. Nothing summed, nothing valued."""
+    spec = (grid.get("report") or {}).get("preference_stack")
+    if not spec:
+        return []
+    types = set(spec.get("claim_types") or [])
+    rows = [c for c in ((claims_doc or {}).get("claims") or []) if c.get("type") in types]
+    lines = [f"## {lab['preference_stack']}", "", lab["preference_stack_note"], ""]
+    if not rows:
+        return lines + [lab["preference_stack_none"], ""]
+    lines += [f"| # | {lab['round_or_instrument']} | {lab['type']} | {lab['claim']} | {lab['figure']} | {lab['status']} | {lab['backing']} |", "|---|---|---|---|---:|---|---|"]
+    for c in rows:
+        st = c.get("status") or "not_checked"
+        label = f"{CLAIM_SYMBOL.get(st, '')} {lab.get('st_' + st, st)}"
+        round_name = md_cell(c.get("round")) or "—"
+        figure = fmt_num(c.get("value")) if c.get("value") is not None else "—"
+        lines.append(f"| {c['id']} | {round_name} | {c.get('type')} | {md_cell(c.get('statement'))} | {figure} | {label} | {_backing(lab, c)} |")
+    lines.append("")
+    return lines
+
+
+def ipo_comparables_section(lab, grid, claims_doc, lang):
+    """The IPO comparables table of a grid that asks for one (grid["report"]["ipo_comparables"]).
+
+    Layout only: every claim of the claim type that names a comparable and a metric, with the
+    figure its filing states at IPO, and next to it the deck's own latest figure for the same
+    metric, from the last proven or confirmed claim of the matching type. No multiple, no
+    valuation, no ranking."""
+    spec = (grid.get("report") or {}).get("ipo_comparables")
+    if not spec:
+        return []
+    metrics = {m["id"]: m for m in (spec.get("metrics") or [])}
+    claims = (claims_doc or {}).get("claims") or []
+    rows = [c for c in claims if c.get("type") == spec.get("claim_type", "exit_comparable") and c.get("comparable") and c.get("metric") in metrics]
+    lines = [f"## {lab['ipo_comparables']}", "", lab["ipo_comparables_note"], ""]
+    if not rows:
+        return lines + [lab["ipo_comparables_none"], ""]
+    deck_figure = {}
+    for c in claims:
+        if c.get("status") in ("proven", "confirmed") and c.get("value") is not None:
+            deck_figure[c.get("type")] = c  # the last one in claim order wins
+    lines += [f"| {lab['comparable']} | {lab['metric']} | {lab['at_ipo']} | {lab['deck_figure']} | {lab['status']} | # |", "|---|---|---:|---:|---|---|"]
+    for c in rows:
+        m = metrics[c["metric"]]
+        st = c.get("status") or "not_checked"
+        label = f"{CLAIM_SYMBOL.get(st, '')} {lab.get('st_' + st, st)}"
+        own = deck_figure.get(m.get("deck_claim_type"))
+        own_s = f"{fmt_num(own.get('value'))} ({own['id']})" if own else "—"
+        at_ipo = fmt_num(c.get("value")) if c.get("value") is not None else "—"
+        lines.append(f"| {md_cell(c.get('comparable'))} | {md_cell(pick(m.get('name'), lang))} | {at_ipo} | {own_s} | {label} | {c.get('id')} |")
     lines.append("")
     return lines
 
@@ -650,6 +741,8 @@ def full_report(lab, deck, grid, profile, answers, score, reading, pages_meta, d
         lines += to_request_section(lab, gate, email_text, lang)
         lines += claims_section(lab, claims_doc, benchmarks)
         lines += plan_vs_actual_section(lab, grid, claims_doc, lang)
+        lines += preference_stack_section(lab, grid, claims_doc, lang)
+        lines += ipo_comparables_section(lab, grid, claims_doc, lang)
     lines += questions_section(lab, grid, score, answers, lang, benchmarks)
     lines += benchmarks_section(lab, benchmarks, lang)
     return "\n".join(lines)

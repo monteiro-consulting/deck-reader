@@ -71,13 +71,15 @@ def classification(**overrides):
 
 
 class RoutingTest(unittest.TestCase):
-    def test_series_c_and_every_later_round_route_to_series_c(self):
-        for s in ("series C", "Series C", "série C", "serie C", "series-c", "série-c", "series_c", "seriesc", "SERIES C",
-                  "series D", "Série D", "series E", "growth round", "Growth Round", "growth-round", "series-c-or-later"):
+    def test_series_c_routes_to_series_c_and_later_rounds_no_longer_do(self):
+        for s in ("series C", "Series C", "série C", "serie C", "series-c", "série-c", "series_c", "seriesc", "SERIES C", "series-c-or-later"):
             self.assertEqual(grid_lib.stage_key(s), "series_c", s)
             self.assertEqual(grid_lib.load_grid(s)["stage"], "series-c", s)
         self.assertEqual(grid_lib.stage_key(GRID), "series_c")
         self.assertEqual(grid_lib.stage_key("series B"), "series_b")
+        # Since the series D grid exists, series D and every later round route to it, not here.
+        for s in ("series D", "Série D", "series E", "growth round", "Growth Round", "growth-round", "series-d-or-later"):
+            self.assertEqual(grid_lib.stage_key(s), "series_d", s)
         for s in ("other", "not_stated", ""):
             with self.assertRaises(grid_lib.GridError):
                 grid_lib.stage_key(s)
@@ -85,11 +87,11 @@ class RoutingTest(unittest.TestCase):
     def test_profiler_value_is_the_one_routed(self):
         with open(os.path.join(HERE, "..", "agents", "deck-profiler.md"), encoding="utf-8") as f:
             profiler = re.sub(r"\s+", " ", f.read())
-        self.assertIn("`series-c-or-later`", profiler)
+        self.assertIn("`series-c`", profiler)
         self.assertIn("series C grid", profiler)
         with open(os.path.join(HERE, "..", "skills", "deck-reader", "SKILL.md"), encoding="utf-8") as f:
             skill = f.read()
-        self.assertIn("`series-c-or-later`", skill)
+        self.assertIn("`series-c`", skill)
         self.assertIn("GRID=series_c", skill)
 
     def test_grid_shape_inherits_series_b(self):
@@ -266,8 +268,8 @@ class DocumentsGateTest(unittest.TestCase):
     def test_biotech_list_drops_cohorts_and_billing_through_the_cli(self):
         with tempfile.TemporaryDirectory() as tmp:
             profile, req = os.path.join(tmp, "profile.json"), os.path.join(tmp, "required.json")
-            dump(profile, {"model_type": "biotech", "announced_stage": "series-c-or-later"})
-            self.assertEqual(documents_gate.main(["required", "--grid", "series-c-or-later", "--profile", profile, "--out", req]), 0)
+            dump(profile, {"model_type": "biotech", "announced_stage": "series-c"})
+            self.assertEqual(documents_gate.main(["required", "--grid", "series-c", "--profile", profile, "--out", req]), 0)
             with open(req, encoding="utf-8") as f:
                 doc = json.load(f)
             self.assertEqual(doc["stage"], "series-c")
@@ -327,7 +329,7 @@ class ProofCapTest(unittest.TestCase):
     def test_proof_questions_without_a_proven_claim_are_capped_by_code(self):
         with tempfile.TemporaryDirectory() as tmp:
             prof, cp = os.path.join(tmp, "profile.json"), os.path.join(tmp, "claims.json")
-            dump(prof, {"model_type": "saas", "customer_type": "B2B", "announced_stage": "series-c-or-later"})
+            dump(prof, {"model_type": "saas", "customer_type": "B2B", "announced_stage": "series-c"})
             dump(cp, {"claims": [{"id": "K01", "type": "plan_vs_actual", "status": "proven"},
                                  {"id": "K02", "type": "discount_rate", "status": "not_covered"},
                                  {"id": "K03", "type": "fcf_margin", "status": "unverifiable"},
@@ -340,7 +342,7 @@ class ProofCapTest(unittest.TestCase):
             dump(os.path.join(tmp, "block-H.json"), {"block": "H", "answers": [
                 {"question_id": "H1", "value": "found", "evidence": [{"page": 1, "quote": "q"}], "claim_ids": []},
                 {"question_id": "H4", "value": "found", "evidence": [{"page": 1, "quote": "q"}], "claim_ids": ["K04"]}]})
-            changed = dict(apply_proof_cap.run("growth round", prof, tmp, cp))
+            changed = dict(apply_proof_cap.run("série C", prof, tmp, cp))
             self.assertEqual(changed, {"D2": "capped", "D3": "capped", "C6": "capped", "H4": "downgraded"})
             with open(os.path.join(tmp, "block-D.json"), encoding="utf-8") as f:
                 values = {a["question_id"]: a["value"] for a in json.load(f)["answers"]}
@@ -351,7 +353,7 @@ class ProofCapTest(unittest.TestCase):
 
 
 class ReportTest(unittest.TestCase):
-    PROFILE = {"model_type": "saas", "customer_type": "B2B", "announced_stage": "series-c-or-later", "sector": "s", "business_model": "b", "deck_language": "en", "page_count": 3, "evidence": {}}
+    PROFILE = {"model_type": "saas", "customer_type": "B2B", "announced_stage": "series-c", "sector": "s", "business_model": "b", "deck_language": "en", "page_count": 3, "evidence": {}}
 
     def claims(self):
         pva = []
@@ -415,11 +417,11 @@ class ReportTest(unittest.TestCase):
     def test_report_cli_abort_on_missing_documents(self):
         with tempfile.TemporaryDirectory() as tmp:
             profile, ann, gate_path, out = (os.path.join(tmp, n) for n in ("profile.json", "annexes.json", "gate.json", "deck.reading.md"))
-            dump(profile, {"model_type": "fintech", "customer_type": "B2B", "announced_stage": "series-c-or-later", "evidence": {}})
+            dump(profile, {"model_type": "fintech", "customer_type": "B2B", "announced_stage": "series-c", "evidence": {}})
             dump(ann, ANNEXES)
             gate, _ = documents_gate.documents_gate(ANNEXES, classification(), grid_lib.effective_grid(GRID, {"model_type": "fintech"}))
             dump(gate_path, gate)
-            self.assertEqual(report.main(["--grid", "series-c-or-later", "--deck", "deck.pdf", "--profile", profile, "--annexes", ann, "--gate", gate_path,
+            self.assertEqual(report.main(["--grid", "series-c", "--deck", "deck.pdf", "--profile", profile, "--annexes", ann, "--gate", gate_path,
                                           "--lang", "fr", "--out", out, "--no-pdf", "--abort-kind", "missing_documents", "--abort-reason", "licence, risk_book_48m"]), 0)
             with open(out, encoding="utf-8") as f:
                 text = f.read()

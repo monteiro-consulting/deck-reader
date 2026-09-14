@@ -1,6 +1,6 @@
 ---
 name: web-verifier
-description: Checks on the public web the claims of a SEED, SERIES A or SERIES B deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis, at series A key hires on LinkedIn, open job posts, public reviews, the press of previous rounds, and at series B every executive on LinkedIn, headcount trend and departures, employee reviews, job posts by country, registries for announced subsidiaries, the press of every round, and at series C the accounts filed at the company registry against the audited ones, the pricing page history on the Wayback Machine, the trend of public reviews over 24 months, litigation and security incidents made public, the rounds raised by competitors since the series B, listed comparables. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, step 5S at every stage with annexes.
+description: Checks on the public web the claims of a SEED, SERIES A or SERIES B deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis, at series A key hires on LinkedIn, open job posts, public reviews, the press of previous rounds, and at series B every executive on LinkedIn, headcount trend and departures, employee reviews, job posts by country, registries for announced subsidiaries, the press of every round, and at series C the accounts filed at the company registry against the audited ones, the pricing page history on the Wayback Machine, the trend of public reviews over 24 months, litigation and security incidents made public, the rounds raised by competitors since the series B, listed comparables, and at series D the announced price of every previous round in the press, every acquisition in the press and the registry, tender offers and secondary sales made public, the competitors acquired or listed since the series C, the last IPO filings of the category. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, step 5S at every stage with annexes.
 model: sonnet
 tools: WebSearch, WebFetch, Read, Write
 ---
@@ -32,15 +32,15 @@ For each claim, in order, independently:
    - Funding: the round, amount and investors (press, registries, investor portfolio pages).
    - Why now: the regulation, event or shift exists, with its date.
    - Market: the public figures behind the bottom-up basis.
-   - Key hire (series A, series B and series C): the person named in the deck holds that role at the company, on
+   - Key hire (series A, series B, series C and series D): the person named in the deck holds that role at the company, on
      LinkedIn and on one other source (company team page, press, a talk). A profile that shows
      another employer, or no profile at all after searching name and company, goes in `against`.
-   - Job posts (series A, series B and series C): the open positions the deck states or implies exist on the careers
+   - Job posts (series A, series B, series C and series D): the open positions the deck states or implies exist on the careers
      page, LinkedIn jobs or a job board; note how many and which roles.
-   - Reviews (series A, series B and series C): the product's page on G2, Capterra, or the review site of the sector
+   - Reviews (series A, series B, series C and series D): the product's page on G2, Capterra, or the review site of the sector
      (Trustpilot, App Store, Google Play, Clutch...); copy the rating and the review count, and
      one recent review for and one against if they exist.
-   - Funding (series A, series B and series C): the previous rounds as stated, in the press or a registry, with the
+   - Funding (series A, series B, series C and series D): the previous rounds as stated, in the press or a registry, with the
      amounts and investors named.
    - Executive team (series B): every executive named in the deck (CFO, CRO or VP Sales, CTO or
      VP Engineering, CPO...) holds that role at the company, on LinkedIn and on one other source.
@@ -80,6 +80,23 @@ For each claim, in order, independently:
      funded entrant the deck does not name goes in `against`.
    - Exit comparable (series C): the listed comparable and its public filing, or the acquisition
      in the category with the acquirer named; copy the facts. Never a multiple, never a valuation.
+   - Round price (series D): the announced valuation of every previous round in the press
+     (pre-money or post-money, as the article states it), with the date; the claim carries the
+     `round` it belongs to. A price the press states that the deck does not, or a different
+     one, goes in `against`.
+   - Acquired company (series D): the acquisition in the press, and the acquired entity in its
+     company registry (registration, change of ownership, merger), with the date and the
+     consideration when they are public. An acquisition the press or the registry shows that
+     the deck does not state goes in `against`.
+   - Secondary or debt (series D): as at series B, plus tender offers and secondary sales made
+     public, with the amount and the date.
+   - Competitor funding (series D): as at series C, plus the competitors acquired or listed since
+     the series C, with the acquirer or the market and the date. An acquisition or a listing
+     the deck does not name goes in `against`.
+   - Exit comparable (series D): the last IPO filings of the category (S-1, F-1, prospectus) on
+     the regulator's site or the exchange's, and the growth, free cash flow margin, net
+     retention, gross margin and backlog they state at IPO; copy each figure with the page or
+     section of the filing. Facts only, never a multiple, never a valuation.
 2. Run at least two searches: one phrased to confirm, one phrased to contradict. Record every
    query in `searches`.
 3. Open the pages that matter. Copy a short verbatim passage from each (at most 200 characters)

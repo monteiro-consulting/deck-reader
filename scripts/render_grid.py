@@ -13,8 +13,8 @@ Usage:
     render_grid.py series_b biotech --lang fr
     render_grid.py seed marketplace --lang fr --out seed-marketplace.fr.md
 
-<stage> accepts preseed, seed, series_a, series_b, series_c (and the spellings grid_lib knows:
-"series A", "série B", "series D", "growth round").
+<stage> accepts preseed, seed, series_a, series_b, series_c, series_d (and the spellings grid_lib
+knows: "series A", "série B", "series D", "growth round", "pre-IPO").
 <model> is one of the files in scripts/grids/models/ (saas, marketplace, consumer, ecommerce,
 hardware, fintech, biotech); an unknown model falls back to saas, as the profiler does.
 """
@@ -73,7 +73,7 @@ T = {
 
 STAGE_NAMES = {"preseed": {"en": "pre-seed", "fr": "pre-seed"}, "seed": {"en": "seed", "fr": "seed"},
                "series_a": {"en": "series A", "fr": "série A"}, "series_b": {"en": "series B", "fr": "série B"},
-               "series_c": {"en": "series C", "fr": "série C"}}
+               "series_c": {"en": "series C", "fr": "série C"}, "series_d": {"en": "series D", "fr": "série D"}}
 
 
 def pick(d, lang):

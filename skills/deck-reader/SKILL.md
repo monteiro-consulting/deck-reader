@@ -1,6 +1,6 @@
 ---
 name: deck-reader
-description: Use when the user runs /deck-reader with a path to a pitch deck PDF (and, at seed, series A, series B and series C, the annexes the founder sent) and wants the deck-completeness report written next to it. One grid per stage (pre-seed, seed, series A, series B, series C and every later round), one block per business model; the deck's announced stage picks the grid, the detected model picks the block. Never a verdict.
+description: Use when the user runs /deck-reader with a path to a pitch deck PDF (and, at seed, series A, series B, series C and series D, the annexes the founder sent) and wants the deck-completeness report written next to it. One grid per stage (pre-seed, seed, series A, series B, series C, series D and every later round), one block per business model; the deck's announced stage picks the grid, the detected model picks the block. Never a verdict.
 argument-hint: path/to/deck.pdf [--annex file ...] [--keep-work]
 disable-model-invocation: true
 ---
@@ -13,7 +13,7 @@ model. The word "score" always means "deck completeness", never the quality of t
 
 Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Agents are the plugin's own
 (`deck-reader:<agent-name>`). Run scripts with `python`. `--grid` takes a stage name
-(`preseed`, `seed`, `series_a`, `series_b`, `series_c`); the grids are in `scripts/grids/`, the model blocks in
+(`preseed`, `seed`, `series_a`, `series_b`, `series_c`, `series_d`); the grids are in `scripts/grids/`, the model blocks in
 `scripts/grids/models/`, the benchmarks in `scripts/grids/benchmarks/`. Every script applies the
 model block itself from `profile.json`; you never edit a grid.
 
@@ -49,9 +49,10 @@ model block itself from `profile.json`; you never edit a grid.
    - `seed` → `GRID=seed`, continue at **3S**.
    - `series-a` (the deck says "series A", "série A", "Series A") → `GRID=series_a`, continue at **3A**.
    - `series-b` (the deck says "series B", "série B", "Series B") → `GRID=series_b`, continue at **3A**.
-   - `series-c-or-later` (the deck says "series C", "série C", "series D", "growth round" or any
-     later round) → `GRID=series_c`, continue at **3A**. One grid covers the series C and every
-     round after it.
+   - `series-c` (the deck says "series C", "série C", "Series C") → `GRID=series_c`, continue at **3A**.
+   - `series-d-or-later` (the deck says "series D", "série D", "series E", "growth round",
+     "pre-IPO" or any later round) → `GRID=series_d`, continue at **3A**. One grid covers the
+     series D and every round after it.
    - anything else (`other`, `not_stated`): run
      `python ${CLAUDE_PLUGIN_ROOT}/scripts/report.py --grid preseed --deck DECK --profile WORK/profile.json --pages WORK/pages.json --lang LANG --out OUT --abort-kind stage --abort-reason "<announced stage and the quote>"`,
      tell the user the deck announces that stage (or none) and that no grid exists for it, give
@@ -103,12 +104,12 @@ section 7. No model block applies at pre-seed.
      `python ${CLAUDE_PLUGIN_ROOT}/scripts/founder_email.py --kind leftovers --deck DECK --lang LANG --gate WORK/gate.json --out EMAIL`
      (the reading goes on; the email lists what is still missing). Continue at **5S**.
 
-## 3A. Series A, series B and series C: documents, first gate
+## 3A. Series A, series B, series C and series D: documents, first gate
 
 The list is the one of the stage and the model block, see the grid and the model files (six
-documents for SaaS at series A, ten at series B, eleven at series C); a missing document stops
-the reading. No coverage threshold. `GRID` is `series_a`, `series_b` or `series_c`, set in
-section 2.
+documents for SaaS at series A, ten at series B, eleven at series C, twelve at series D); a
+missing document stops the reading. No coverage threshold. `GRID` is `series_a`, `series_b`,
+`series_c` or `series_d`, set in section 2.
 
 1. `python ${CLAUDE_PLUGIN_ROOT}/scripts/annex_text.py --out WORK/annexes.json ANNEXES...`
    (run it even with no annex). Note `readable_count`.
@@ -128,7 +129,7 @@ section 2.
      where the report and the email draft are. **No claims, no web check, no grid.** Go to step 9.
    - `continue`: every document is there. Continue at **4A**.
 
-## 4A. Series A, series B and series C: claims and proof in the documents
+## 4A. Series A, series B, series C and series D: claims and proof in the documents
 
 1. `python ${CLAUDE_PLUGIN_ROOT}/scripts/claim_types.py --grid GRID --out WORK/types.json`
 2. Launch **one** `deck-reader:claim-extractor` agent with:
@@ -140,15 +141,18 @@ section 2.
    `output_path=WORK/matches.json`.
    Then `python ${CLAUDE_PLUGIN_ROOT}/scripts/verify_matches.py --grid GRID --claims WORK/claims.verified.json --matches WORK/matches.json --annexes WORK/annexes.json --out WORK/claims.annex.json --invalid WORK/matches.invalid.json`
    Exit code 1: same one retry as in 4S step 2, then `--finalize`.
-   There is no coverage gate at series A, series B or series C: claims the documents do not cover are
+   There is no coverage gate at series A, series B, series C or series D: claims the documents do not cover are
    listed in the report as not covered and never stop the reading. No leftovers email: the
-   document list replaces it. At series C the matcher also returns `plan_value` and
+   document list replaces it. At series C and series D the matcher also returns `plan_value` and
    `actual_value` for the plan vs actual claims; `verify_matches.py` keeps them for the report
-   table. Continue at **5S** with `--grid GRID` in every command, then
+   table. At series D the extractor also fills `comparable` and `metric` on an exit comparable
+   read in an IPO filing, and `round` on a preference, funding, secondary or debt, debt terms
+   or round price claim; the report reads them for the preference stack and the IPO
+   comparables. Continue at **5S** with `--grid GRID` in every command, then
    **6S** with `documents_gate.py contradictions --grid GRID` in place of
    `seed_gate.py contradictions`.
 
-## 5S. Seed, series A, series B and series C: web check
+## 5S. Seed, series A, series B, series C and series D: web check
 
 1. Launch **one** `deck-reader:web-verifier` agent with:
    `claims_path=WORK/claims.annex.json`, `profile_path=WORK/profile.json`,
@@ -161,13 +165,17 @@ section 2.
    press of every previous round. At series C it also includes the annual accounts filed at the
    company registry against the audited accounts, the pricing page history on the Wayback
    Machine, the trend of public reviews over 24 months, litigation and security incidents made
-   public, the rounds raised by competitors since the series B, and listed comparables.
+   public, the rounds raised by competitors since the series B, and listed comparables. At
+   series D it also includes the press of every previous round for its announced price, the
+   press and the company registry for every acquisition, tender offers and secondary sales made
+   public, the competitors acquired or listed since the series C, and the last IPO filings of
+   the category (S-1, F-1, prospectus) for the comparables.
 2. `python ${CLAUDE_PLUGIN_ROOT}/scripts/verify_web.py --grid GRID --claims WORK/claims.annex.json --web WORK/web.json --out WORK/claims.final.json`
    Read `blatant_ids`.
 
-## 6S. Seed, series A, series B and series C: double check, second gate
+## 6S. Seed, series A, series B, series C and series D: double check, second gate
 
-`GATE` = `seed_gate.py` at seed, `documents_gate.py` at series A, series B and series C.
+`GATE` = `seed_gate.py` at seed, `documents_gate.py` at series A, series B, series C and series D.
 
 1. If `blatant_ids` is empty: `python ${CLAUDE_PLUGIN_ROOT}/scripts/GATE contradictions --grid GRID --claims WORK/claims.final.json --out WORK/gate2.json --out-claims WORK/claims.reviewed.json`
    and continue with `CLAIMS=WORK/claims.reviewed.json`.
@@ -197,7 +205,7 @@ confirmation. Each pass is independent: same inputs, fresh agents, no access to 
 2. Launch the `deck-reader:block-checker` agents **in one message**, one per block, each with:
    `pages_path=WORK/pages.json`, `profile_path=WORK/profile.json`,
    `questions_path=WORK/block-X.questions.json`, `output_path=P/block-X.json`,
-   `output_language=LANG`, and at seed, series A, series B and series C `claims_path=CLAIMS`.
+   `output_language=LANG`, and at seed, series A, series B, series C and series D `claims_path=CLAIMS`.
    Never give a checker another block's questions, the grid file, or any other checker's output.
 3. `python ${CLAUDE_PLUGIN_ROOT}/scripts/verify_quotes.py --answers-dir P --pages WORK/pages.json --out P/invalid.json`
 4. If `P/invalid.json` is not empty, retry, **at most twice** per pass:
@@ -212,7 +220,7 @@ confirmation. Each pass is independent: same inputs, fresh agents, no access to 
 5. After the second retry, or when no retry is needed:
    `python ${CLAUDE_PLUGIN_ROOT}/scripts/verify_quotes.py --answers-dir P --pages WORK/pages.json --out P/invalid.json --finalize`
    Remaining invalid answers become `absent` with `quote_invalid: true`. Nobody overrides that.
-6. Seed, series A, series B and series C: `python ${CLAUDE_PLUGIN_ROOT}/scripts/apply_proof_cap.py --grid GRID --profile WORK/profile.json --answers-dir P --claims CLAIMS`
+6. Seed, series A, series B, series C and series D: `python ${CLAUDE_PLUGIN_ROOT}/scripts/apply_proof_cap.py --grid GRID --profile WORK/profile.json --answers-dir P --claims CLAIMS`
    A figure without a proven or confirmed claim behind it is capped at partial; an answer
    citing a claim left to probe is lowered one step. The script does it, not you.
 
@@ -241,26 +249,29 @@ Read `confirmation_due` and `extra_passes` from its output line.
    `answers_dir=WORK/final`, `grid_path=${CLAUDE_PLUGIN_ROOT}/scripts/grids/GRID.json`,
    `effective_grid_path=WORK/grid.effective.md`,
    `red_blocks=<list from score.json>`, `output_language=LANG`, `output_path=WORK/reading.md`,
-   and at seed, series A, series B and series C `claims_path=CLAIMS`.
+   and at seed, series A, series B, series C and series D `claims_path=CLAIMS`.
    The writer never receives DECK, pages.json, transcription.json, score.json, the annexes or
    the pass directories.
 3. Pre-seed: `python ${CLAUDE_PLUGIN_ROOT}/scripts/report.py --grid preseed --deck DECK --profile WORK/profile.json --answers-dir WORK/final --score WORK/score.json --reading WORK/reading.md --pages WORK/pages.json --lang LANG --out OUT`
-   Seed, series A, series B and series C: the same with `--grid GRID --annexes WORK/annexes.json --claims CLAIMS --gate WORK/gate.json --email EMAIL`.
-   At seed, series A, series B and series C the report shows, next to each figure, the benchmark of the
+   Seed, series A, series B, series C and series D: the same with `--grid GRID --annexes WORK/annexes.json --claims CLAIMS --gate WORK/gate.json --email EMAIL`.
+   At seed, series A, series B, series C and series D the report shows, next to each figure, the benchmark of the
    model and the stage with its source and date. The script adds it; it never enters the score. At series C the script
    also lays out the plan vs actual table, quarter by quarter, from the claims; nothing in it is
-   scored.
+   scored. At series D the script also lays out the plan vs actual table over twelve quarters
+   with the distribution by band (within ±5 %, within ±10 %, beyond), the preference stack and
+   the company next to the last IPOs of its category, from the claims; nothing in them is
+   scored, summed or valued.
 
 ## 9. Finish
 
 1. Unless `--keep-work` was given, delete `WORK`. Nothing persists outside `OUT`, its PDF twin
-   and, at seed, series A, series B and series C when something is missing, `EMAIL`.
+   and, at seed, series A, series B, series C and series D when something is missing, `EMAIL`.
 2. Tell the user, in their language: the report paths (markdown and PDF); the stage, the grid
    and the model block used; the block percentages and the global as printed by `score.py`; the
    red blocks; the number of passes and the unstable questions; how many quotes were rejected;
-   at seed, series A, series B and series C, how many claims were proven, confirmed, not covered,
+   at seed, series A, series B, series C and series D, how many claims were proven, confirmed, not covered,
    unverifiable, to probe, and whether an email draft was written and where; at series A,
-   series B and series C, which documents of the stage and model list were present. Nothing else. No opinion
+   series B, series C and series D, which documents of the stage and model list were present. Nothing else. No opinion
    on the company, no "looks strong", no "I would pass". If the reading stopped, say at which
    gate and why, in one sentence, and that the investor decides.
 

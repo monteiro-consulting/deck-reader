@@ -1,6 +1,6 @@
 ---
 name: annex-matcher
-description: For each claim of a SEED, SERIES A or SERIES B deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model; at series A the monthly P&L, cohorts, CRM export, cap table, three-year model and top 10 contracts; at series B also the audited accounts, sales roster, top 20 contracts, board pack and org chart; at series C also the billing export, the terms of every round and the board packs of eight quarters, where a plan vs actual claim is looked up twice) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4S and series A, series B and series C step 4A.
+description: For each claim of a SEED, SERIES A or SERIES B deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model; at series A the monthly P&L, cohorts, CRM export, cap table, three-year model and top 10 contracts; at series B also the audited accounts, sales roster, top 20 contracts, board pack and org chart; at series C also the billing export, the terms of every round and the board packs of eight quarters, where a plan vs actual claim is looked up twice; at series D also the auditor's management letters, the term sheet of this round and the board packs of twelve quarters with their issue dates) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4S and series A, series B, series C and series D step 4A.
 model: sonnet
 tools: Read, Write
 ---
@@ -29,12 +29,20 @@ For each claim, in order, independently:
    the rows from which it follows directly (a monthly revenue table for an MRR claim, a customer
    list for a customer count). A figure the deck attributes to the audited accounts (`proof`
    says so) is looked up in the audited accounts, not in the P&L.
-   At series C, a `plan_vs_actual` claim (it carries a `metric` and a `period`) is looked up
-   twice: the plan or budget of that quarter in the board pack, the actual of that quarter in
-   the P&L. Report the plan in `plan_value` and the actual in `actual_value` (the actual also in
-   `found_value`), with one quote from each page. An audit opinion is read in the auditor's
-   report, a net price or a discount in the billing export, a liquidation preference, a ratchet
-   or a debt term in the terms of the rounds, a zero-burn growth in the model's scenario.
+   At series C and series D, a `plan_vs_actual` claim (it carries a `metric` and a `period`) is
+   looked up twice: the plan or budget of that quarter in the board pack, the actual of that
+   quarter in the P&L. Report the plan in `plan_value` and the actual in `actual_value` (the
+   actual also in `found_value`), with one quote from each page. An audit opinion is read in the
+   auditor's report, a net price or a discount in the billing export, a liquidation preference,
+   a ratchet or a debt term in the terms of the rounds, a zero-burn growth in the model's
+   scenario.
+   At series D, a management letter finding (or the statement that there was none) is read in
+   the auditor's management letters; a close cycle in the issue date of the board pack against
+   the end of its quarter; a backlog or a multi-year share in the contract start and end dates
+   of the billing export; the price of a round and its preference in the terms of the rounds,
+   including the term sheet of this round when one is signed; the cash line of this round, and
+   whether another round is needed, in the three-year model. A claim that carries a `round`
+   is looked up in the terms of that round, not of another.
 3. Decide one status:
    - `proven`: the annex states the fact, or gives the rows it follows from, and the figure you
      read there is the figure the deck states, or close to it. You do not decide what "close"

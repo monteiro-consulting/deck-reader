@@ -1,7 +1,7 @@
 {
   "name": "deck-reader",
-  "version": "0.3.0",
-  "description": "Reads a pitch deck (PDF) and writes a deck-completeness report next to it, with the grid of the stage the deck announces and the block of its business model. Pre-seed: completeness of the deck. Seed: completeness, plus every figure the deck states checked against the annexes provided and public sources, and a draft email to the founder for what is missing. Series A: the same with a required document list per stage and business model, net retention and unit economics as the heaviest blocks, and benchmarks shown next to every figure, never scored. Series B: ten required documents over 36 months (audited accounts and sales roster among them), efficient growth and repeatability as the heaviest blocks, the executive team checked on LinkedIn. Series C and every later round: eleven required documents over 48 months (billing export and the terms of every round among them), plan against actual over eight quarters from the board packs laid out in the report, efficient growth and position and durability as the heaviest blocks. No verdict, no investment recommendation.",
+  "version": "0.4.0",
+  "description": "Reads a pitch deck (PDF) and writes a deck-completeness report next to it, with the grid of the stage the deck announces and the block of its business model. Pre-seed: completeness of the deck. Seed: completeness, plus every figure the deck states checked against the annexes provided and public sources, and a draft email to the founder for what is missing. Series A: the same with a required document list per stage and business model, net retention and unit economics as the heaviest blocks, and benchmarks shown next to every figure, never scored. Series B: ten required documents over 36 months (audited accounts and sales roster among them), efficient growth and repeatability as the heaviest blocks, the executive team checked on LinkedIn. Series C: eleven required documents over 48 months (billing export and the terms of every round among them), plan against actual over eight quarters from the board packs laid out in the report, efficient growth and position and durability as the heaviest blocks. Series D and every later round: twelve required documents over 60 months (the auditor's management letters among them), plan against actual over twelve quarters counted by band, the preference stack and the IPO comparables laid out as facts, profitable growth and predictability and exit readiness as the heaviest blocks. No verdict, no investment recommendation.",
   "author": {
     "name": "Valentin Monteiro"
   },
@@ -12,6 +12,7 @@
     "series-a",
     "series-b",
     "series-c",
+    "series-d",
     "due-diligence",
     "completeness",
     "investor",

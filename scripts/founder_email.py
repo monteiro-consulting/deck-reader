@@ -15,7 +15,7 @@ leftovers  the reading continued; these are the claims still not covered, same f
 documents  the required document list of the stage and business model (documents_gate.py
            documents) has a hole. One line per missing document with what it must contain and
            why it did not pass (absent, too few months, too few items). Replaces the leftovers
-           email at the stages that carry a document list (series A, series B, series C). Nothing in this
+           email at the stages that carry a document list (series A, series B, series C, series D). Nothing in this
            script depends on the stage: the gate file carries the list.
 
 The draft is written to a file. The user sends it, or not. The tool never sends anything.
