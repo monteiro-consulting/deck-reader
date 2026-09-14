@@ -6,7 +6,7 @@ Standard library only. No model sees or computes this score.
 Usage:
     score.py --grid GRID --answers-dir DIR --profile profile.json --out score.json
 
---grid is a stage name (preseed, seed) or a path. The model-specific questions of the
+--grid is a stage name (preseed, seed, series_a, series_b) or a path. The model-specific questions of the
 profile (grid_lib.effective_grid) are included, so a marketplace deck is scored on them too.
 
 Rules (fixed with the grid, see grids/<stage>.md "The computation"):
@@ -15,7 +15,11 @@ Rules (fixed with the grid, see grids/<stage>.md "The computation"):
     global         mean of block percents weighted by block weight
     C3 (weight 0)  not counted
     F3             not_assessable and not counted when F1 or F2 is not "found"
-    weight_if_b2c  a question's weight when the profile says B2C (pre-seed B3: 1, seed C4: 0)
+    weight_if_b2c  a question's weight when the profile says B2C (pre-seed B3: 1, seed C4: 0,
+                   series B C5, C6, D4, D5, D6: 0)
+    red flag       a question marked red_flag_if_absent whose value is absent, only while it is
+                   counted: a question at weight 0 (B2C, or a block reweighted to 0) is asked for
+                   information and never raises a red flag
     block weight 0 a block reweighted to 0 by a model block (biotech traction) is information
                    only: its questions are answered, it never counts in the global, never red
     capped         a seed answer capped to partial by apply_proof_cap.py is scored as partial
@@ -90,7 +94,7 @@ def compute(grid, answers, profile):
             block_points += points
             block_max += q_max
 
-            if q.get("red_flag_if_absent") and value == "absent":
+            if q.get("red_flag_if_absent") and value == "absent" and counted:
                 red_flags.append(qid)
             if block["weight"] >= call_weight and value in ("partial", "absent") and status != "not_assessable":
                 call_question_ids.append(qid)

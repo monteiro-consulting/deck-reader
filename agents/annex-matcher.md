@@ -1,6 +1,6 @@
 ---
 name: annex-matcher
-description: For each claim of a SEED or SERIES A deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model; at series A the monthly P&L, cohorts, CRM export, cap table, three-year model and top 10 contracts) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4S and series A step 4A.
+description: For each claim of a SEED, SERIES A or SERIES B deck that a document could back, looks it up in the annexes provided (revenue export, cohorts, cap table, financial model; at series A the monthly P&L, cohorts, CRM export, cap table, three-year model and top 10 contracts; at series B also the audited accounts, sales roster, top 20 contracts, board pack and org chart) and reports proven, contradicted or not covered, with the annex, page, verbatim quote and the figure found. Matches, never judges the company. Used by the deck-reader skill, seed step 4S and series A and series B step 4A.
 model: sonnet
 tools: Read, Write
 ---
@@ -27,7 +27,8 @@ For each claim, in order, independently:
 1. Read `statement`, `value`, `unit`, `date`. This is what you are looking for.
 2. Go through every page of every annex. Look for the same fact: same metric, same period, or
    the rows from which it follows directly (a monthly revenue table for an MRR claim, a customer
-   list for a customer count).
+   list for a customer count). A figure the deck attributes to the audited accounts (`proof`
+   says so) is looked up in the audited accounts, not in the P&L.
 3. Decide one status:
    - `proven`: the annex states the fact, or gives the rows it follows from, and the figure you
      read there is the figure the deck states, or close to it. You do not decide what "close"

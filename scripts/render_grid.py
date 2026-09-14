@@ -2,16 +2,19 @@
 """Write the effective grid of one stage and one business model as a single markdown document.
 
 Standard library only. Nothing is scored, nothing is judged: this is the grid an investor reads
-in one piece, "the SaaS series A grid", with the model block already applied and the benchmarks
-listed with their sources.
+in one piece, "the SaaS series A grid", with the model block already applied (questions and,
+where the stage has a first gate, the required document list) and the benchmarks listed with
+their sources.
 
 Usage:
     render_grid.py <stage> <model> [--lang en|fr] [--out grid.md]
 
     render_grid.py series_a saas
+    render_grid.py series_b biotech --lang fr
     render_grid.py seed marketplace --lang fr --out seed-marketplace.fr.md
 
-<stage> accepts preseed, seed, series_a (and the spellings grid_lib knows: "series A", "série A").
+<stage> accepts preseed, seed, series_a, series_b (and the spellings grid_lib knows: "series A",
+"série B").
 <model> is one of the files in scripts/grids/models/ (saas, marketplace, consumer, ecommerce,
 hardware, fintech, biotech); an unknown model falls back to saas, as the profiler does.
 """
@@ -19,7 +22,7 @@ import argparse
 import sys
 
 from grid_lib import (GridError, apply_model_block, known_models, load_benchmarks, load_grid,
-                      load_model, stage_key)
+                      load_model, required_documents, stage_key)
 
 T = {
     "en": {
@@ -28,6 +31,11 @@ T = {
         "stage": "Stage", "model": "Model", "grid_version": "Grid version", "model_version": "Model block version",
         "model_block": "What the model block does to the stage grid",
         "removed": "Removed questions", "reweighted_blocks": "Reweighted blocks", "reweighted_questions": "Reweighted questions", "added": "Added questions",
+        "documents_removed": "Removed documents", "documents_added": "Added documents",
+        "documents": "Required documents (first gate)",
+        "documents_note": "The list of the stage and the model block: every document below must be present and cover the minimum, or the reading stops with the request email. The model block adjusts the list; the deck never does.",
+        "document_id": "Id", "document_name": "Document", "requirement": "Requirement", "minimum": "Minimum",
+        "min_months": "{n} months", "min_count": "{n} items",
         "none": "none", "principle": "Model principle", "sources": "Model sources",
         "blocks": "Blocks and questions", "weight": "weight", "from_model": "block brought by the model",
         "question": "Question", "found_if": "Found if", "note": "Note", "proof": "proof", "claim_types": "claim types",
@@ -45,6 +53,11 @@ T = {
         "stage": "Stade", "model": "Modèle", "grid_version": "Version de la grille", "model_version": "Version du bloc de modèle",
         "model_block": "Ce que le bloc de modèle fait à la grille du stade",
         "removed": "Questions retirées", "reweighted_blocks": "Blocs repondérés", "reweighted_questions": "Questions repondérées", "added": "Questions ajoutées",
+        "documents_removed": "Documents retirés", "documents_added": "Documents ajoutés",
+        "documents": "Documents requis (première porte)",
+        "documents_note": "La liste du stade et du bloc de modèle : chaque document ci-dessous doit être présent et couvrir le minimum, sinon la lecture s'arrête avec l'email de demande. Le bloc de modèle ajuste la liste ; le deck ne le fait jamais.",
+        "document_id": "Id", "document_name": "Document", "requirement": "Exigence", "minimum": "Minimum",
+        "min_months": "{n} mois", "min_count": "{n} éléments",
         "none": "aucune", "principle": "Principe du modèle", "sources": "Sources du modèle",
         "blocks": "Blocs et questions", "weight": "poids", "from_model": "bloc apporté par le modèle",
         "question": "Question", "found_if": "Trouvée si", "note": "Note", "proof": "preuve", "claim_types": "types d'affirmation",
@@ -58,7 +71,8 @@ T = {
     },
 }
 
-STAGE_NAMES = {"preseed": {"en": "pre-seed", "fr": "pre-seed"}, "seed": {"en": "seed", "fr": "seed"}, "series_a": {"en": "series A", "fr": "série A"}}
+STAGE_NAMES = {"preseed": {"en": "pre-seed", "fr": "pre-seed"}, "seed": {"en": "seed", "fr": "seed"},
+               "series_a": {"en": "series A", "fr": "série A"}, "series_b": {"en": "series B", "fr": "série B"}}
 
 
 def pick(d, lang):
@@ -96,11 +110,27 @@ def render(stage, model, lang="en"):
     lines.append(f"- **{t['reweighted_blocks']}**: {', '.join(f'{k} → {v}' for k, v in rb.items()) or t['none']}")
     lines.append(f"- **{t['reweighted_questions']}**: {', '.join(f'{k} → {v}' for k, v in rq.items()) or t['none']}")
     lines.append(f"- **{t['added']}**: {', '.join(mb['added']) or t['none']}")
+    documents = required_documents(g)
+    if documents or mb["documents"]["removed"] or mb["documents"]["added"]:
+        lines.append(f"- **{t['documents_removed']}**: {', '.join(mb['documents']['removed']) or t['none']}")
+        lines.append(f"- **{t['documents_added']}**: {', '.join(mb['documents']['added']) or t['none']}")
     lines.append("")
     if block.get("sources"):
         lines += [f"## {t['sources']}", ""]
         for s in block["sources"]:
             lines.append(f"- [{cell(s.get('title'))}]({s.get('url')}) · {s.get('date') or '—'}")
+        lines.append("")
+
+    if documents:
+        lines += [f"## {t['documents']}", "", t["documents_note"], "",
+                  f"| {t['document_id']} | {t['document_name']} | {t['requirement']} | {t['minimum']} |", "|---|---|---|---|"]
+        for d in documents:
+            minimum = []
+            if d.get("min_months"):
+                minimum.append(t["min_months"].format(n=d["min_months"]))
+            if d.get("min_count"):
+                minimum.append(t["min_count"].format(n=d["min_count"]))
+            lines.append(f"| {d['id']} | {cell(pick(d.get('name'), lang))} | {cell(pick(d.get('requirement'), lang))} | {', '.join(minimum) or '—'} |")
         lines.append("")
 
     lines += [f"## {t['blocks']}", ""]

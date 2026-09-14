@@ -1,6 +1,6 @@
 {
   "model": "consumer",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "Consumer", "fr": "Consumer"},
   "principle": {
     "en": "Many users, small or no payments, growth carried by habit and word of mouth. The evidence is engagement and cohort retention, not revenue. The questions follow a16z's consumer benchmarks and Andrew Chen's magic metrics; revenue questions lose weight, the sales cycle disappears.",
@@ -80,7 +80,64 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "top10_contracts"],
+        "add": [
+          {
+            "id": "product_analytics_12m",
+            "name": {"en": "Product analytics export over 12 months", "fr": "Export d'analytics produit sur 12 mois"},
+            "requirement": {"en": "Monthly and daily active users, retention by acquisition cohort, and organic share of new users, month by month, from the analytics tool.", "fr": "Utilisateurs actifs mensuels et quotidiens, rétention par cohorte d'acquisition et part organique des nouveaux utilisateurs, mois par mois, depuis l'outil d'analytics."},
+            "min_months": 12
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": ["B2", "C5", "C6", "D4", "D5", "D6"],
+      "reweight": {"blocks": {}, "questions": {"B1": 1}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "N1",
+              "question": {"en": "Daily active users over monthly active users, over 36 months?", "fr": "DAU sur MAU, sur 36 mois ?"},
+              "found_if": "Both counts with the definition of 'active', and the monthly ratio over 36 months, from an analytics export.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N2",
+              "question": {"en": "Do the cohort curves flatten between day 7 and day 30, and do newer cohorts do better?", "fr": "Les cohortes s'aplatissent-elles entre le jour 7 et le jour 30, et les cohortes récentes font-elles mieux ?"},
+              "found_if": "Day 1, 7 and 30 retention by monthly cohort over 24 months or more, with the day where the curves flatten, and the newest cohorts next to the oldest.",
+              "note": "A curve that still falls at day 30 = partial.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N3",
+              "question": {"en": "What share of new users is organic, and what is the paid CAC by country?", "fr": "Quelle part des nouveaux utilisateurs est organique, et quel est le CAC payant par pays ?"},
+              "found_if": "The share of new users from organic, referral or word of mouth, and the cost per paid user by country, with the method.",
+              "note": "All paid = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "sales_roster", "top20_contracts"],
+        "add": [
+          {
+            "id": "product_analytics_24m",
+            "name": {"en": "Product analytics export over 24 months", "fr": "Export d'analytics produit sur 24 mois"},
+            "requirement": {"en": "Monthly and daily active users, DAU over MAU, retention by acquisition cohort, and organic share of new users, month by month, from the analytics tool.", "fr": "Utilisateurs actifs mensuels et quotidiens, DAU sur MAU, rétention par cohorte d'acquisition et part organique des nouveaux utilisateurs, mois par mois, depuis l'outil d'analytics."},
+            "min_months": 24
+          }
+        ]
+      }
     }
   }
 }

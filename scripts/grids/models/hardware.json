@@ -1,6 +1,6 @@
 {
   "model": "hardware",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "Hardware", "fr": "Hardware"},
   "principle": {
     "en": "A physical product that must be built, shipped and supported. Margin depends on volume, and volume depends on suppliers. The questions follow SeriesOps' note on hardware gross margin: the deck must show the margin at 1,000, 10,000 and 100,000 units, the bill of materials, and the minimum order quantities. The economics block counts double.",
@@ -79,7 +79,68 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "bom_and_suppliers",
+            "name": {"en": "Bill of materials and supplier terms", "fr": "Nomenclature et conditions fournisseurs"},
+            "requirement": {"en": "The BOM with the unit cost per component and the landed cost per unit, and the supplier contracts or quotes with minimum order quantities and payment terms.", "fr": "La nomenclature avec le coût unitaire par composant et le coût rendu par unité, et les contrats ou devis fournisseurs avec les quantités minimales de commande et les conditions de paiement."},
+            "min_months": null
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": [],
+      "reweight": {"blocks": {"C": 6}, "questions": {}},
+      "add": [
+        {
+          "block": "C",
+          "questions": [
+            {
+              "id": "P1",
+              "question": {"en": "Gross margin at 1,000, 10,000 and 100,000 units, and the margin realized in the audited accounts?", "fr": "Marge brute à 1 000, 10 000 et 100 000 unités, et la marge réalisée dans les comptes audités ?"},
+              "found_if": "A margin per unit at each of the three volumes, and the realized margin of each of the last two fiscal years in the audited accounts.",
+              "note": "A single margin figure without volume = partial. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin", "audited_figure"]
+            },
+            {
+              "id": "P2",
+              "question": {"en": "Bill of materials with the cost per unit, and its curve over 36 months?", "fr": "Nomenclature (BOM) avec le coût unitaire, et sa courbe sur 36 mois ?"},
+              "found_if": "The main components with their unit cost, the total landed cost per unit, and its curve over 36 months.",
+              "note": "A total without the lines = partial.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin"]
+            },
+            {
+              "id": "P3",
+              "question": {"en": "Minimum order quantities, supplier terms, inventory and warranty?", "fr": "Quantités minimales de commande (MOQ), conditions fournisseurs, stock et garantie ?"},
+              "found_if": "The MOQ of the critical components or of the contract manufacturer, the payment terms, the inventory month by month, and the warranty claims and returns by month.",
+              "note": "Inventory or warranty missing = partial.",
+              "requires_proof": true,
+              "claim_types": ["runway", "churn"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "bom_and_suppliers",
+            "name": {"en": "Bill of materials and supplier terms", "fr": "Nomenclature et conditions fournisseurs"},
+            "requirement": {"en": "The BOM with the unit cost per component and the landed cost per unit, and the supplier contracts or quotes with minimum order quantities and payment terms.", "fr": "La nomenclature avec le coût unitaire par composant et le coût rendu par unité, et les contrats ou devis fournisseurs avec les quantités minimales de commande et les conditions de paiement."},
+            "min_months": null
+          },
+          {
+            "id": "inventory_24m",
+            "name": {"en": "Inventory, warranty claims and returns over 24 months", "fr": "Stock, réclamations de garantie et retours sur 24 mois"},
+            "requirement": {"en": "Inventory, warranty claims and returns, month by month.", "fr": "Stock, réclamations de garantie et retours, mois par mois."},
+            "min_months": 24
+          }
+        ]
+      }
     }
   }
 }

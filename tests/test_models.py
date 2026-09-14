@@ -1,4 +1,4 @@
-"""Tests for the business-model blocks: the three verbs, the seed + marketplace non-regression,
+"""Tests for the business-model blocks: the four verbs, the seed + marketplace non-regression,
 the default model, the pre-seed grid left untouched, the readable copies, and render_grid."""
 import json
 import os
@@ -14,7 +14,9 @@ import score  # noqa: E402
 
 SEED = grid_lib.load_grid("seed")
 SERIES_A = grid_lib.load_grid("series_a")
+SERIES_B = grid_lib.load_grid("series_b")
 PRESEED = grid_lib.load_grid("preseed")
+STAGES_WITH_DOCUMENTS = (SERIES_A, SERIES_B)
 MODELS_MD = os.path.join(HERE, "..", "skills", "deck-reader", "grids", "models")
 
 
@@ -24,6 +26,13 @@ def ids(grid):
 
 def block(grid, bid):
     return next(b for b in grid["blocks"] if b["id"] == bid)
+
+
+def doc_ids(grid):
+    return [d["id"] for d in grid_lib.required_documents(grid)]
+
+
+DOC = {"id": "t_doc", "name": {"en": "T", "fr": "T"}, "requirement": {"en": "t.", "fr": "t."}, "min_months": 6}
 
 
 class VerbTest(unittest.TestCase):
@@ -76,6 +85,76 @@ class VerbTest(unittest.TestCase):
         self.assertIn("T1", ids(g))
 
 
+class DocumentsVerbTest(unittest.TestCase):
+    BASE = ["pnl_24m", "cohorts_12m", "crm_pipeline", "cap_table", "model_3y", "top10_contracts"]
+
+    def test_remove_takes_a_document_out_by_id(self):
+        g = grid_lib.apply_model_block(SERIES_A, {"documents": {"remove": ["crm_pipeline"]}}, "t")
+        self.assertEqual(doc_ids(g), [d for d in self.BASE if d != "crm_pipeline"])
+        self.assertEqual(g["model_block"]["documents"], {"removed": ["crm_pipeline"], "added": []})
+        self.assertEqual(doc_ids(SERIES_A), self.BASE)  # the stage grid on disk is untouched
+        self.assertEqual(g["blocks"], SERIES_A["blocks"])
+
+    def test_add_appends_an_entry_with_the_grid_shape(self):
+        g = grid_lib.apply_model_block(SERIES_A, {"documents": {"add": [DOC, dict(DOC, id="t_set", min_months=None, min_count=3)]}}, "t")
+        self.assertEqual(doc_ids(g), self.BASE + ["t_doc", "t_set"])
+        added = grid_lib.required_documents(g)[-2:]
+        self.assertEqual(added[0], DOC)
+        self.assertEqual(added[1]["min_count"], 3)
+        self.assertIsNone(added[1]["min_months"])
+        self.assertNotIn("min_count", added[0])
+        self.assertEqual(g["model_block"]["documents"], {"removed": [], "added": ["t_doc", "t_set"]})
+
+    def test_unknown_id_and_duplicate_id_are_errors(self):
+        with self.assertRaises(grid_lib.GridError):
+            grid_lib.apply_model_block(SERIES_A, {"documents": {"remove": ["nope"]}}, "t")
+        with self.assertRaises(grid_lib.GridError):
+            grid_lib.apply_model_block(SERIES_A, {"documents": {"add": [dict(DOC, id="cap_table")]}}, "t")
+        with self.assertRaises(grid_lib.GridError):
+            grid_lib.apply_model_block(SERIES_A, {"documents": {"add": [DOC, DOC]}}, "t")
+        with self.assertRaises(grid_lib.GridError):
+            grid_lib.apply_model_block(SERIES_A, {"documents": {"add": [{"id": "x", "name": {"en": "x"}}]}}, "t")
+
+    def test_documents_on_a_stage_without_a_list_is_an_error(self):
+        for stage in (SEED, PRESEED):
+            with self.assertRaises(grid_lib.GridError):
+                grid_lib.apply_model_block(stage, {"documents": {"remove": ["pnl_24m"]}}, "t")
+            with self.assertRaises(grid_lib.GridError):
+                grid_lib.apply_model_block(stage, {"documents": {"add": [DOC]}}, "t")
+            g = grid_lib.apply_model_block(stage, {"documents": {}}, "t")  # an empty verb is not an error
+            self.assertEqual(g["model_block"]["documents"], {"removed": [], "added": []})
+            self.assertEqual(grid_lib.required_documents(g), [])
+
+    def test_documents_run_after_the_question_verbs(self):
+        q = {"id": "T1", "question": {"en": "t?"}, "found_if": "x", "note": ""}
+        ops = {"remove": ["C3"], "reweight": {"blocks": {"B": 0}}, "add": [{"block": "B", "questions": [q]}],
+               "documents": {"remove": ["crm_pipeline"], "add": [DOC]}}
+        g = grid_lib.apply_model_block(SERIES_A, ops, "t")
+        self.assertIn("T1", ids(g))
+        self.assertNotIn("C3", ids(g))
+        self.assertEqual(doc_ids(g), [d for d in self.BASE if d != "crm_pipeline"] + ["t_doc"])
+        # A question verb that fails stops the block before the documents verb runs.
+        with self.assertRaises(grid_lib.GridError):
+            grid_lib.apply_model_block(SERIES_A, {"remove": ["Z9"], "documents": {"remove": ["crm_pipeline"]}}, "t")
+        mb = g["model_block"]
+        self.assertEqual(set(mb), {"model", "removed", "reweighted", "added", "documents"})
+
+    def test_documents_change_alone_counts_as_applied_model_questions(self):
+        fake = {"model": "docsonly", "version": "t", "name": {"en": "d"}, "stages": {"series_a": {"documents": {"remove": ["crm_pipeline"]}}}}
+        known, load = grid_lib.known_models, grid_lib.load_model
+        grid_lib.known_models = lambda: known() + ["docsonly"]
+        grid_lib.load_model = lambda m: fake if m == "docsonly" else load(m)
+        try:
+            g = grid_lib.effective_grid(SERIES_A, {"model_type": "docsonly"})
+            self.assertEqual(g["applied_model_questions"], "docsonly")
+            self.assertEqual(g["blocks"], SERIES_A["blocks"])
+            self.assertNotIn("crm_pipeline", doc_ids(g))
+            s = grid_lib.effective_grid(SEED, {"model_type": "docsonly"})  # no seed section: untouched
+            self.assertEqual(s["applied_model_questions"], "")
+        finally:
+            grid_lib.known_models, grid_lib.load_model = known, load
+
+
 class AssemblyTest(unittest.TestCase):
     def test_seed_plus_marketplace_is_exactly_the_previous_seed_grid(self):
         with open(os.path.join(HERE, "fixtures", "seed-marketplace-effective.json"), encoding="utf-8") as f:
@@ -100,12 +179,103 @@ class AssemblyTest(unittest.TestCase):
             self.assertEqual(g["blocks"], PRESEED["blocks"], m)
             self.assertEqual(g["applied_model_questions"], "", m)
 
-    def test_every_model_assembles_at_seed_and_series_a(self):
+    def test_every_model_assembles_at_seed_series_a_and_series_b(self):
         for m in grid_lib.known_models():
-            for stage in (SEED, SERIES_A):
+            model = grid_lib.load_model(m)
+            self.assertEqual(set(model["stages"]), {"seed", "series_a", "series_b"}, m)
+            self.assertEqual(model["version"], "2026-09-14", m)
+            for stage in (SEED, SERIES_A, SERIES_B):
                 g = grid_lib.effective_grid(stage, {"model_type": m})
                 self.assertEqual(len(ids(g)), len(set(ids(g))), f"{m} {stage['stage']}: duplicate ids")
                 self.assertEqual(g["applied_model"], m)
+            for stage in STAGES_WITH_DOCUMENTS:
+                g = grid_lib.effective_grid(stage, {"model_type": m})
+                # Every claim type a model question cites exists in the stage grid (the seed grid
+                # predates the series A types and is not held to this).
+                for _, q in grid_lib.all_questions(g):
+                    for t in q.get("claim_types") or []:
+                        self.assertIn(t, stage["claim_types"], f"{m} {stage['stage']} {q['id']}: unknown claim type {t}")
+                docs = grid_lib.required_documents(g)
+                self.assertTrue(docs, f"{m}: empty document list at {stage['stage']}")
+                self.assertEqual(len(doc_ids(g)), len(set(doc_ids(g))), f"{m} {stage['stage']}: duplicate document ids")
+                for d in docs:
+                    for key in ("id", "name", "requirement", "min_months"):
+                        self.assertIn(key, d, f"{m} {d.get('id')}: missing {key}")
+                    for lang in ("en", "fr"):
+                        self.assertTrue(d["name"].get(lang) and d["requirement"].get(lang), f"{m} {d['id']}: missing {lang} label")
+            self.assertEqual(grid_lib.required_documents(grid_lib.effective_grid(SEED, {"model_type": m})), [])
+
+    def test_document_lists_per_model_at_series_a(self):
+        base = ["pnl_24m", "cohorts_12m", "crm_pipeline", "cap_table", "model_3y", "top10_contracts"]
+        lists = {m: doc_ids(grid_lib.effective_grid(SERIES_A, {"model_type": m})) for m in grid_lib.known_models()}
+        self.assertEqual(lists["saas"], base)
+        self.assertEqual(lists["marketplace"], base + ["gmv_24m"])
+        self.assertEqual(lists["consumer"], ["pnl_24m", "cohorts_12m", "cap_table", "model_3y", "product_analytics_12m"])
+        self.assertNotIn("crm_pipeline", lists["consumer"])
+        self.assertEqual(lists["ecommerce"], ["pnl_24m", "cohorts_12m", "cap_table", "model_3y", "orders_export_24m"])
+        self.assertEqual(lists["hardware"], base + ["bom_and_suppliers"])
+        self.assertEqual(lists["fintech"], base + ["licence", "risk_book_24m"])
+        self.assertEqual(lists["biotech"], ["pnl_24m", "cap_table", "model_3y", "clinical_dossier", "ip_schedule"])
+        bio = {d["id"]: d for d in grid_lib.required_documents(grid_lib.effective_grid(SERIES_A, {"model_type": "biotech"}))}
+        self.assertIsNone(bio["clinical_dossier"]["min_months"])
+        cons = {d["id"]: d for d in grid_lib.required_documents(grid_lib.effective_grid(SERIES_A, {"model_type": "consumer"}))}
+        self.assertEqual(cons["product_analytics_12m"]["min_months"], 12)
+        self.assertEqual(grid_lib.effective_grid(SERIES_A, {"model_type": "saas"})["model_block"]["documents"], {"removed": [], "added": []})
+
+    def test_document_lists_per_model_at_series_b(self):
+        base = ["pnl_36m", "accounts_audited", "cohorts_24m", "crm_pipeline", "sales_roster", "cap_table", "model_3y", "top20_contracts", "board_pack_4q", "org_chart"]
+        no_sales = ["pnl_36m", "accounts_audited", "cohorts_24m", "cap_table", "model_3y", "board_pack_4q", "org_chart"]
+        lists = {m: doc_ids(grid_lib.effective_grid(SERIES_B, {"model_type": m})) for m in grid_lib.known_models()}
+        self.assertEqual(lists["saas"], base)
+        self.assertEqual(lists["marketplace"], base + ["gmv_36m"])
+        self.assertEqual(lists["consumer"], no_sales + ["product_analytics_24m"])
+        self.assertEqual(lists["ecommerce"], no_sales + ["orders_export_36m"])
+        self.assertEqual(lists["hardware"], base + ["bom_and_suppliers", "inventory_24m"])
+        self.assertEqual(lists["fintech"], base + ["licence", "risk_book_36m"])
+        self.assertEqual(lists["biotech"], ["pnl_36m", "accounts_audited", "cap_table", "model_3y", "board_pack_4q", "org_chart", "clinical_dossier", "ip_schedule"])
+        docs = {m: {d["id"]: d for d in grid_lib.required_documents(grid_lib.effective_grid(SERIES_B, {"model_type": m}))} for m in lists}
+        self.assertEqual(docs["marketplace"]["gmv_36m"]["min_months"], 36)
+        self.assertEqual(docs["consumer"]["product_analytics_24m"]["min_months"], 24)
+        self.assertEqual(docs["ecommerce"]["orders_export_36m"]["min_months"], 36)
+        self.assertIsNone(docs["hardware"]["bom_and_suppliers"]["min_months"])
+        self.assertEqual(docs["hardware"]["inventory_24m"]["min_months"], 24)
+        self.assertEqual(docs["fintech"]["risk_book_36m"]["min_months"], 36)
+        self.assertIsNone(docs["biotech"]["clinical_dossier"]["min_months"])
+        self.assertEqual(docs["saas"]["accounts_audited"]["min_count"], 2)
+        self.assertEqual(grid_lib.effective_grid(SERIES_B, {"model_type": "saas"})["model_block"]["documents"], {"removed": [], "added": []})
+        self.assertEqual(grid_lib.effective_grid(SERIES_B, {"model_type": "saas"})["applied_model_questions"], "")
+
+    def test_examples_from_the_spec_at_series_b(self):
+        cons = grid_lib.effective_grid(SERIES_B, {"model_type": "consumer"})
+        for qid in ("B2", "C5", "C6", "D4", "D5", "D6"):
+            self.assertNotIn(qid, ids(cons), qid)
+        self.assertTrue({"N1", "N2", "N3"} <= set(ids(cons)))
+        self.assertEqual(next(q for _, q in grid_lib.all_questions(cons) if q["id"] == "B1")["weight"], 1)
+        self.assertEqual([q["id"] for q in block(cons, "D")["questions"]], ["D1", "D2", "D3"])
+        bio = grid_lib.effective_grid(SERIES_B, {"model_type": "biotech"})
+        self.assertEqual(block(bio, "R")["weight"], 3)
+        self.assertEqual([q["id"] for q in block(bio, "R")["questions"]], ["R1", "R2", "R3"])
+        for bid in ("B", "D", "E"):
+            self.assertEqual(block(bio, bid)["weight"], 0, bid)
+        self.assertEqual(block(bio, "C")["weight"], 1)
+        for qid in ("C5", "C6", "D4", "D5", "D6"):
+            self.assertNotIn(qid, ids(bio), qid)
+        hw = grid_lib.effective_grid(SERIES_B, {"model_type": "hardware"})
+        self.assertEqual(block(hw, "C")["weight"], 6)
+        self.assertEqual(block(hw, "C")["weight"], 2 * block(SERIES_B, "C")["weight"])
+        self.assertTrue({"P1", "P2", "P3"} <= set(ids(hw)))
+        eco = grid_lib.effective_grid(SERIES_B, {"model_type": "ecommerce"})
+        self.assertTrue({"O1", "O2", "O3"} <= set(ids(eco)))
+        self.assertIn("O3", [q["id"] for q in block(eco, "E")["questions"]])
+        self.assertIn("C2", ids(eco))  # the series B design keeps the generic CAC payback
+        for qid in ("C5", "C6", "D4", "D5", "D6"):
+            self.assertNotIn(qid, ids(eco), qid)
+        fin = grid_lib.effective_grid(SERIES_B, {"model_type": "fintech"})
+        self.assertEqual(block(fin, "Q")["weight"], 2)
+        self.assertEqual([q["id"] for q in block(fin, "Q")["questions"]], ["Q1", "Q2", "Q3", "Q4"])
+        mkt = grid_lib.effective_grid(SERIES_B, {"model_type": "marketplace"})
+        self.assertEqual([q["id"] for q in block(mkt, "B")["questions"]][-4:], ["M1", "M2", "M3", "M4"])
+        self.assertEqual(ids(grid_lib.effective_grid(SERIES_B, {"model_type": "saas"})), ids(SERIES_B))
 
     def test_examples_from_the_spec(self):
         bio = grid_lib.effective_grid(SEED, {"model_type": "biotech"})
@@ -133,23 +303,56 @@ class AssemblyTest(unittest.TestCase):
         self.assertNotIn("B", s["red_blocks"])
         self.assertIn("R", s["red_blocks"])
         self.assertEqual(s["global_percent"], 0)
+        # Series B biotech: B, D and E are information only, and their red flags (B4, E2) do not fire.
+        g = grid_lib.effective_grid(SERIES_B, {"model_type": "biotech"})
+        answers = [{"question_id": q, "value": "absent", "evidence": [], "missing": "", "call_question": ""} for q in ids(g)]
+        s = score.compute(g, answers, {"customer_type": "B2B", "model_type": "biotech"})
+        for bid in ("B", "D", "E"):
+            self.assertNotIn(bid, s["red_blocks"], bid)
+        self.assertIn("R", s["red_blocks"])
+        self.assertEqual(sorted(s["red_flags"]), ["G1", "H2"])
 
 
 class BenchmarkTest(unittest.TestCase):
     def test_every_benchmark_has_source_and_date_or_is_empty(self):
         for m in grid_lib.known_models():
-            for stage in ("seed", "series_a"):
-                for b in grid_lib.load_benchmarks(m, stage):
+            for stage in ("seed", "series_a", "series_b"):
+                bms = grid_lib.load_benchmarks(m, stage)
+                self.assertTrue(bms, f"{m} {stage}: no benchmark list")
+                for b in bms:
                     if b.get("value"):
                         self.assertTrue(b.get("source"), f"{b['id']}: value without source")
+                        if stage == "series_b":  # the series B guardrail: a value needs a dated source
+                            self.assertTrue(b.get("date"), f"{b['id']}: value without a date")
                     if b.get("date"):
                         self.assertTrue(b.get("source"), f"{b['id']}: date without source")
+                    if not b.get("value"):
+                        self.assertTrue(b.get("note"), f"{b['id']}: empty value without a note")
                     self.assertTrue(b.get("question_ids") or b.get("claim_types"), b["id"])
+
+    def test_series_b_benchmarks_point_at_series_b_questions(self):
+        for m in grid_lib.known_models():
+            g = grid_lib.effective_grid(SERIES_B, {"model_type": m})
+            known = set(ids(g))
+            for b in grid_lib.load_benchmarks(m, "series_b"):
+                for qid in b.get("question_ids") or []:
+                    self.assertIn(qid, known, f"{m}: benchmark {b['id']} points at {qid}, not in the series B {m} grid")
+                for t in b.get("claim_types") or []:
+                    self.assertIn(t, SERIES_B["claim_types"], f"{b['id']}: unknown claim type {t}")
+        saas = {b["id"]: b for b in grid_lib.load_benchmarks("saas", "series_b")}
+        for empty in ("saas-b-quota-attainment", "saas-b-rep-ramp", "all-b-round-size"):
+            self.assertEqual(saas[empty]["value"], "", empty)
+        self.assertEqual(saas["saas-b-rule-of-40-feld"]["date"], "2015-02-03")
+        self.assertEqual(saas["saas-b-magic-number-scale-2010"]["date"], "2010-04-20")
 
     def test_generic_saas_benchmarks_are_shown_for_other_models(self):
         ids_hw = {b["id"] for b in grid_lib.load_benchmarks("hardware", "series_a")}
         self.assertIn("all-a-burn-multiple-sacks", ids_hw)
         self.assertNotIn("saas-a-arr", ids_hw)
+        ids_hw_b = {b["id"] for b in grid_lib.load_benchmarks("hardware", "series_b")}
+        self.assertIn("all-b-burn-multiple-sacks", ids_hw_b)
+        self.assertIn("all-b-efficiency-score", ids_hw_b)
+        self.assertNotIn("saas-b-growth-bessemer", ids_hw_b)
         self.assertEqual(grid_lib.load_benchmarks("saas", "preseed"), [])
 
 
@@ -166,11 +369,17 @@ class ReadableCopyTest(unittest.TestCase):
                         self.assertIn(f"| {q['id']} |", md, f"{m}: {q['id']} missing from {m}.md")
                 for qid in ops.get("remove") or []:
                     self.assertIn(qid, md, f"{m}: removed {qid} not mentioned in {m}.md")
+                docs = ops.get("documents") or {}
+                for did in docs.get("remove") or []:
+                    self.assertIn(did, md, f"{m}: removed document {did} not mentioned in {m}.md")
+                for d in docs.get("add") or []:
+                    self.assertIn(f"| {d['id']} |", md, f"{m}: added document {d['id']} missing from {m}.md")
+                    self.assertIn(d["name"]["en"], md, f"{m}: name of {d['id']} missing from {m}.md")
 
 
 class RenderGridTest(unittest.TestCase):
     def test_renders_every_stage_and_model_in_both_languages(self):
-        for stage in ("seed", "series_a"):
+        for stage in ("seed", "series_a", "series_b"):
             for m in grid_lib.known_models():
                 for lang in ("en", "fr"):
                     text = render_grid.render(stage, m, lang)
@@ -180,9 +389,45 @@ class RenderGridTest(unittest.TestCase):
         text = render_grid.render("series A", "saas")
         self.assertIn("Benchmarks", text)
         self.assertIn("2026-03-31", text)
+        text = render_grid.render("série B", "saas", "fr")
+        self.assertIn("# Grille : série B, SaaS", text)
+        self.assertIn("| pnl_36m | P&L mensuel sur 36 mois |", text)
+        self.assertIn("2 éléments", text)
+        self.assertIn("2015-02-03", text)
+
+    def test_series_b_render_lists_the_model_documents(self):
+        text = render_grid.render("series_b", "biotech")
+        self.assertIn("# Grid: series B, Biotech", text)
+        self.assertIn("**Removed questions**: C5, C6, D4, D5, D6", text)
+        self.assertIn("**Reweighted blocks**: B → 0, D → 0, E → 0, C → 1", text)
+        self.assertIn("**Removed documents**: cohorts_24m, crm_pipeline, sales_roster, top20_contracts", text)
+        self.assertIn("**Added documents**: clinical_dossier, ip_schedule", text)
+        self.assertIn("### R. Science and regulation, weight 3 (block brought by the model)", text)
+        self.assertNotIn("| sales_roster |", text)
+        self.assertIn("| accounts_audited |", text)
 
     def test_unknown_model_falls_back_to_saas(self):
         self.assertIn("SaaS", render_grid.render("seed", "spacetech"))
+
+    def test_series_a_render_lists_the_model_documents(self):
+        text = render_grid.render("series_a", "consumer")
+        self.assertIn("## Required documents (first gate)", text)
+        self.assertIn("| product_analytics_12m |", text)
+        self.assertIn("Product analytics export over 12 months", text)
+        self.assertNotIn("| crm_pipeline |", text)
+        self.assertNotIn("| top10_contracts |", text)
+        self.assertIn("**Removed documents**: crm_pipeline, top10_contracts", text)
+        self.assertIn("**Added documents**: product_analytics_12m", text)
+        fr = render_grid.render("series_a", "hardware", "fr")
+        self.assertIn("## Documents requis (première porte)", fr)
+        self.assertIn("| bom_and_suppliers | Nomenclature et conditions fournisseurs |", fr)
+        self.assertIn("| pnl_24m | P&L mensuel sur 24 mois |", fr)
+        self.assertIn("| top10_contracts |", fr)
+        self.assertIn("10 éléments", fr)
+        # Seed has no document list: no section, no summary lines.
+        seed = render_grid.render("seed", "consumer")
+        self.assertNotIn("Required documents", seed)
+        self.assertNotIn("Removed documents", seed)
 
 
 if __name__ == "__main__":

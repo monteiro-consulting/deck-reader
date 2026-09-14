@@ -1,6 +1,6 @@
 {
   "model": "biotech",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "Biotech", "fr": "Biotech"},
   "principle": {
     "en": "No customer, no revenue, no retention for years: the evidence is scientific and regulatory progress. The questions follow Mercury's guide to biotech investors: milestones reached, intellectual property, regulatory path. Traction and retention are asked for information only (weight 0), unit economics drops to 1, the sales cycle disappears, and the model's own block counts 3.",
@@ -73,7 +73,76 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "remove": ["cohorts_12m", "crm_pipeline", "top10_contracts"],
+        "add": [
+          {
+            "id": "clinical_dossier",
+            "name": {"en": "Preclinical or clinical data package", "fr": "Dossier de données précliniques ou cliniques"},
+            "requirement": {"en": "Protocols, results and the regulator's correspondence (FDA, EMA or equivalent) for each milestone the deck claims.", "fr": "Protocoles, résultats et correspondance du régulateur (FDA, EMA ou équivalent) pour chaque jalon que le deck revendique."},
+            "min_months": null
+          },
+          {
+            "id": "ip_schedule",
+            "name": {"en": "Patent schedule", "fr": "État des brevets"},
+            "requirement": {"en": "Every patent filing with its status, jurisdictions, and who owns it.", "fr": "Chaque dépôt de brevet avec son statut, ses juridictions et son détenteur."},
+            "min_months": null
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": ["C5", "C6", "D4", "D5", "D6"],
+      "reweight": {"blocks": {"B": 0, "D": 0, "E": 0, "C": 1}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "R", "name": {"en": "Science and regulation", "fr": "Science et réglementation"}, "weight": 3},
+          "questions": [
+            {
+              "id": "R1",
+              "question": {"en": "Which preclinical or clinical milestones were reached since the series A, when, with what data?", "fr": "Quels jalons précliniques ou cliniques ont été atteints depuis la série A, quand, avec quelles données ?"},
+              "found_if": "Each milestone named (phase 1 or 2 readout, pivotal study start, regulator meeting...) with its date and the data behind it, in the clinical data package.",
+              "note": "A milestone 'expected' is not a milestone reached.",
+              "requires_proof": true,
+              "claim_types": ["why_now", "other"]
+            },
+            {
+              "id": "R2",
+              "question": {"en": "What intellectual property, filed or granted, in which territories, and who owns it?", "fr": "Quelle propriété intellectuelle, déposée ou accordée, dans quels territoires, et qui la détient ?"},
+              "found_if": "Patent numbers or filing dates per territory, the owner (company, university, licence), and the licence terms if any, in the patent schedule.",
+              "note": "'Patent pending' without a filing date = partial.",
+              "requires_proof": true,
+              "claim_types": ["other"]
+            },
+            {
+              "id": "R3",
+              "question": {"en": "Which regulatory path, which designations, and what does this round fund up to?", "fr": "Quel chemin réglementaire, quelles désignations, et jusqu'où ce tour finance-t-il ?"},
+              "found_if": "The agency and route named, the designations obtained, and the milestone the round funds, with its date, consistent with the financial model.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["why_now", "runway", "other"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "remove": ["cohorts_24m", "crm_pipeline", "sales_roster", "top20_contracts"],
+        "add": [
+          {
+            "id": "clinical_dossier",
+            "name": {"en": "Preclinical or clinical data package", "fr": "Dossier de données précliniques ou cliniques"},
+            "requirement": {"en": "Protocols, results and the regulator's correspondence (FDA, EMA or equivalent) for each milestone the deck claims.", "fr": "Protocoles, résultats et correspondance du régulateur (FDA, EMA ou équivalent) pour chaque jalon que le deck revendique."},
+            "min_months": null
+          },
+          {
+            "id": "ip_schedule",
+            "name": {"en": "Patent schedule", "fr": "État des brevets"},
+            "requirement": {"en": "Every patent filing with its status, jurisdictions, and who owns it.", "fr": "Chaque dépôt de brevet avec son statut, ses juridictions et son détenteur."},
+            "min_months": null
+          }
+        ]
+      }
     }
   }
 }

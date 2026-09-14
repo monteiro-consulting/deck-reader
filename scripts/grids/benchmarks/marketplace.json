@@ -1,6 +1,6 @@
 {
   "model": "marketplace",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "rule": "Displayed next to the deck figure with source and date, never in the score. Empty value = no dated source found.",
   "stages": {
     "seed": [
@@ -18,6 +18,12 @@
       {"id": "mkt-a-gmv-retention", "metric": {"en": "GMV retention, supply side", "fr": "Rétention du GMV, côté offre"}, "question_ids": ["M5", "M4"], "claim_types": ["retention", "nrr"], "value": "average marketplace 80 to 95 % in the first three months, plateau around 45 to 50 % by month 12; best-in-class at or above 100 % through month 12", "source": "a16z, GMV Retention: The Marketplace Metric Most Ignore", "url": "https://a16z.com/gmv-retention-the-marketplace-metric-most-ignore/", "date": "2022-04-28", "note": "Demand-side retention is generally lower; no figure given."},
       {"id": "mkt-a-concentration", "metric": {"en": "Concentration of supply and demand", "fr": "Concentration de l'offre et de la demande"}, "question_ids": ["M3"], "claim_types": ["concentration"], "value": "", "source": "a16z, 13 Metrics for Marketplace Companies", "url": "https://a16z.com/13-metrics-for-marketplace-companies/", "date": "2020-02-21", "note": "a16z defines the metric without a threshold."},
       {"id": "mkt-a-match-rate", "metric": {"en": "Match rate and time to match", "fr": "Taux et temps de match"}, "question_ids": ["M2"], "claim_types": ["retention"], "value": "", "source": "a16z, 13 Metrics for Marketplace Companies", "url": "https://a16z.com/13-metrics-for-marketplace-companies/", "date": "2020-02-21", "note": "a16z defines the metrics without a threshold."}
+    ],
+    "series_b": [
+      {"id": "mkt-b-gmv-retention", "metric": {"en": "GMV retention, supply side", "fr": "Rétention du GMV, côté offre"}, "question_ids": ["M4", "M2"], "claim_types": ["retention", "nrr"], "value": "average marketplace 80 to 95 % in the first three months, plateau around 45 to 50 % by month 12; best-in-class at or above 100 % through month 12", "source": "a16z, GMV Retention: The Marketplace Metric Most Ignore", "url": "https://a16z.com/gmv-retention-the-marketplace-metric-most-ignore/", "date": "2022-04-28", "note": "Demand-side retention is generally lower; no figure given. Not stage-specific."},
+      {"id": "mkt-b-concentration", "metric": {"en": "Concentration of the top twenty sellers and buyers", "fr": "Concentration des vingt premiers vendeurs et acheteurs"}, "question_ids": ["M3", "B5"], "claim_types": ["concentration"], "value": "", "source": "a16z, 13 Metrics for Marketplace Companies", "url": "https://a16z.com/13-metrics-for-marketplace-companies/", "date": "2020-02-21", "note": "a16z defines the metric without a threshold."},
+      {"id": "mkt-b-take-rate", "metric": {"en": "Take rate at series B", "fr": "Take rate en série B"}, "question_ids": ["M1"], "claim_types": ["revenue"], "value": "", "source": "", "url": "", "date": "", "note": "No dated series B source found. The series A range (Initialized, 2021-06-29: 10 to 30 %) is not shown at series B."},
+      {"id": "mkt-b-gmv-growth", "metric": {"en": "Year-over-year GMV growth at series B", "fr": "Croissance du GMV sur un an en série B"}, "question_ids": ["M1", "B3"], "claim_types": ["revenue"], "value": "", "source": "", "url": "", "date": "", "note": "No dated series B source found."}
     ]
   }
 }

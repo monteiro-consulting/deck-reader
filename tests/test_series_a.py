@@ -1,4 +1,4 @@
-"""Tests for the series A grid: routing, readable copy, documents gate, founder email, report."""
+"""Tests for the series A grid: routing, readable copy, documents gate (stage and model list), founder email, report."""
 import json
 import os
 import sys
@@ -13,10 +13,15 @@ import founder_email  # noqa: E402
 import grid_lib  # noqa: E402
 import report  # noqa: E402
 import score  # noqa: E402
-import series_a_gate  # noqa: E402
+import documents_gate  # noqa: E402
 
 GRID = grid_lib.load_grid("series_a")
 REQUIRED = [d["id"] for d in GRID["annex_gate"]["required_documents"]]
+
+
+def dump(path, obj):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(obj, f)
 
 
 def annex(aid, text, kind="csv"):
@@ -58,7 +63,7 @@ class RoutingTest(unittest.TestCase):
         self.assertEqual(grid_lib.stage_key(GRID), "series_a")
         self.assertEqual(grid_lib.stage_key("pre-seed"), "preseed")
         with self.assertRaises(grid_lib.GridError):
-            grid_lib.stage_key("series B")
+            grid_lib.stage_key("series C")
 
     def test_grid_shape_matches_seed_schema(self):
         seed = grid_lib.load_grid("seed")
@@ -89,63 +94,98 @@ class RoutingTest(unittest.TestCase):
 
 class DocumentsGateTest(unittest.TestCase):
     def test_all_present_continues(self):
-        g, invalid = series_a_gate.documents_gate(ANNEXES, classification(), GRID)
+        g, invalid = documents_gate.documents_gate(ANNEXES, classification(), GRID)
         self.assertEqual(invalid, [])
         self.assertEqual(g["decision"], "continue")
         self.assertEqual([p["document"] for p in g["present"]], REQUIRED)
         self.assertEqual(g["to_request"], [])
 
     def test_one_missing_document_stops_and_lists_it(self):
-        g, _ = series_a_gate.documents_gate(ANNEXES, classification(X4=None), GRID)
+        g, _ = documents_gate.documents_gate(ANNEXES, classification(X4=None), GRID)
         self.assertEqual(g["decision"], "stop_missing_documents")
         self.assertEqual([m["document"] for m in g["to_request"]], ["cap_table"])
         self.assertEqual(g["to_request"][0]["reason"], "absent")
 
     def test_too_few_months_stops(self):
-        g, _ = series_a_gate.documents_gate(ANNEXES, classification(X1={"months_covered": 18}), GRID)
+        g, _ = documents_gate.documents_gate(ANNEXES, classification(X1={"months_covered": 18}), GRID)
         self.assertEqual(g["decision"], "stop_missing_documents")
         self.assertEqual(g["to_request"][0]["document"], "pnl_24m")
         self.assertIn("18 month(s), 24 required", g["to_request"][0]["reason"])
 
     def test_too_few_contracts_stops(self):
-        g, _ = series_a_gate.documents_gate(ANNEXES, classification(X6={"items_covered": 7}), GRID)
+        g, _ = documents_gate.documents_gate(ANNEXES, classification(X6={"items_covered": 7}), GRID)
         self.assertEqual(g["decision"], "stop_missing_documents")
         self.assertIn("7 item(s), 10 required", g["to_request"][0]["reason"])
 
     def test_quote_not_in_annex_is_invalid_and_document_missing(self):
-        g, invalid = series_a_gate.documents_gate(ANNEXES, classification(X2={"quote": "not there"}), GRID)
+        g, invalid = documents_gate.documents_gate(ANNEXES, classification(X2={"quote": "not there"}), GRID)
         self.assertEqual(invalid[0]["reason"], "quote_not_in_annex")
         self.assertEqual([m["document"] for m in g["to_request"]], ["cohorts_12m"])
 
     def test_no_annex_at_all_lists_the_six(self):
-        g, _ = series_a_gate.documents_gate({"annex_count": 0, "readable_count": 0, "annexes": []}, {"annexes": []}, GRID)
+        g, _ = documents_gate.documents_gate({"annex_count": 0, "readable_count": 0, "annexes": []}, {"annexes": []}, GRID)
         self.assertEqual(g["decision"], "stop_missing_documents")
         self.assertEqual([m["document"] for m in g["to_request"]], REQUIRED)
 
     def test_other_type_is_ignored_not_invalid(self):
         cl = classification()
         cl["annexes"].append({"annex_id": "X1", "type": "other", "quote": "", "months_covered": None})
-        g, invalid = series_a_gate.documents_gate(ANNEXES, cl, GRID)
+        g, invalid = documents_gate.documents_gate(ANNEXES, cl, GRID)
         self.assertEqual(invalid, [])
         self.assertEqual(g["decision"], "continue")
 
+    def test_consumer_list_drops_crm_and_contracts_and_requires_product_analytics(self):
+        g = grid_lib.effective_grid(GRID, {"model_type": "consumer"})
+        gate, invalid = documents_gate.documents_gate(ANNEXES, classification(X3=None, X6=None), g)
+        self.assertEqual(invalid, [])
+        self.assertNotIn("crm_pipeline", gate["required"])
+        self.assertNotIn("top10_contracts", gate["required"])
+        self.assertIn("product_analytics_12m", gate["required"])
+        self.assertEqual(gate["model"], "consumer")
+        self.assertEqual(gate["decision"], "stop_missing_documents")
+        self.assertEqual([m["document"] for m in gate["to_request"]], ["product_analytics_12m"])
+        # A classification into a document the model removed is invalid, not silently accepted.
+        gate, invalid = documents_gate.documents_gate(ANNEXES, classification(), g)
+        self.assertEqual(sorted(i["type"] for i in invalid), ["crm_pipeline", "top10_contracts"])
+        # With the analytics export the consumer list is complete.
+        annexes = dict(ANNEXES, annexes=ANNEXES["annexes"] + [annex("X7", "Month	MAU	DAU	D30 retention	Organic share")])
+        cl = classification(X3=None, X6=None)
+        cl["annexes"].append({"annex_id": "X7", "type": "product_analytics_12m", "quote": "Month	MAU	DAU", "months_covered": 12})
+        gate, _ = documents_gate.documents_gate(annexes, cl, g)
+        self.assertEqual(gate["decision"], "continue")
+        self.assertEqual([p["document"] for p in gate["present"]], ["pnl_24m", "cohorts_12m", "cap_table", "model_3y", "product_analytics_12m"])
+
     def test_cli_required_and_documents(self):
         with tempfile.TemporaryDirectory() as tmp:
+            profile = os.path.join(tmp, "profile.json")
+            dump(profile, {"model_type": "saas", "customer_type": "B2B"})
             req = os.path.join(tmp, "required.json")
-            self.assertEqual(series_a_gate.main(["required", "--grid", "series_a", "--out", req]), 0)
+            self.assertEqual(documents_gate.main(["required", "--grid", "series_a", "--profile", profile, "--out", req]), 0)
             with open(req, encoding="utf-8") as f:
-                self.assertEqual([d["id"] for d in json.load(f)["required"]], REQUIRED)
+                doc = json.load(f)
+            self.assertEqual([d["id"] for d in doc["required"]], REQUIRED)
+            self.assertEqual(doc["model"], "saas")
             ann, cl, out = (os.path.join(tmp, n) for n in ("annexes.json", "cl.json", "gate.json"))
-            json.dump(ANNEXES, open(ann, "w", encoding="utf-8"))
-            json.dump(classification(X5=None), open(cl, "w", encoding="utf-8"))
-            self.assertEqual(series_a_gate.main(["documents", "--grid", "series_a", "--annexes", ann, "--classification", cl, "--out", out]), 0)
+            dump(ann, ANNEXES)
+            dump(cl, classification(X5=None))
+            self.assertEqual(documents_gate.main(["documents", "--grid", "series_a", "--profile", profile, "--annexes", ann, "--classification", cl, "--out", out]), 0)
             with open(out, encoding="utf-8") as f:
                 self.assertEqual(json.load(f)["decision"], "stop_missing_documents")
+            # The consumer profile changes the list the CLI sees; no --profile means saas.
+            dump(profile, {"model_type": "consumer"})
+            self.assertEqual(documents_gate.main(["required", "--grid", "series_a", "--profile", profile, "--out", req]), 0)
+            with open(req, encoding="utf-8") as f:
+                ids = [d["id"] for d in json.load(f)["required"]]
+            self.assertIn("product_analytics_12m", ids)
+            self.assertNotIn("crm_pipeline", ids)
+            self.assertEqual(documents_gate.main(["required", "--grid", "series_a", "--out", req]), 0)
+            with open(req, encoding="utf-8") as f:
+                self.assertEqual([d["id"] for d in json.load(f)["required"]], REQUIRED)
 
 
 class FounderEmailTest(unittest.TestCase):
     def test_documents_email_lists_each_missing_document(self):
-        g, _ = series_a_gate.documents_gate(ANNEXES, classification(X4=None, X1={"months_covered": 12}), GRID)
+        g, _ = documents_gate.documents_gate(ANNEXES, classification(X4=None, X1={"months_covered": 12}), GRID)
         t = founder_email.draft("documents", "deck.pdf", "fr", g["to_request"])
         self.assertIn("P&L mensuel sur 24 mois", t)
         self.assertIn("covers 12 month(s), 24 required", t)
@@ -174,11 +214,11 @@ class ScoreAndReportTest(unittest.TestCase):
         s = score.compute(g, answers, profile)
         claims = {"claims": [{"id": "K01", "page": 3, "quote": "q", "type": "nrr", "statement": "NRR 118 %", "value": 118, "status": "proven"},
                              {"id": "K02", "page": 4, "quote": "q", "type": "founder", "statement": "x", "value": None, "status": "confirmed"}]}
-        gate, _ = series_a_gate.documents_gate(ANNEXES, classification(), GRID)
+        gate, _ = documents_gate.documents_gate(ANNEXES, classification(), GRID)
         lab = report.L("en")
         text = report.full_report(lab, "deck.pdf", g, profile, answers, s, "### reading", {"reference_source": "pdf"}, "2026-09-13", "en", ANNEXES, claims, gate, None)
         self.assertIn("series A grid", text)
-        self.assertIn("Every document of the fixed list is present.", text)
+        self.assertIn("Every document of the list is present.", text)
         self.assertIn("| Benchmark |", text)
         self.assertIn("110 to 120 percent competitive".replace(" percent", " %"), text)  # NRR next to K01
         self.assertIn("Benchmarks shown, never scored", text)
@@ -190,7 +230,7 @@ class ScoreAndReportTest(unittest.TestCase):
     def test_abort_report_missing_documents(self):
         profile = {"model_type": "saas", "customer_type": "B2B", "announced_stage": "series-a", "evidence": {}}
         g = grid_lib.effective_grid(GRID, profile)
-        gate, _ = series_a_gate.documents_gate(ANNEXES, classification(X3=None), GRID)
+        gate, _ = documents_gate.documents_gate(ANNEXES, classification(X3=None), GRID)
         email = founder_email.draft("documents", "deck.pdf", "en", gate["to_request"])
         text = report.abort_report(report.L("fr"), "deck.pdf", g, profile, "2026-09-13", "missing_documents", "crm_pipeline missing", ANNEXES, None, gate, email, {"reference_source": "pdf"}, "fr")
         self.assertIn("Lecture interrompue", text)

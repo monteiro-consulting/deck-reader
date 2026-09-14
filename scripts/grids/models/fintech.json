@@ -1,6 +1,6 @@
 {
   "model": "fintech",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "Fintech", "fr": "Fintech"},
   "principle": {
     "en": "Money moves through the product, so a regulator, a partner bank and a loss rate sit between the company and its revenue. The questions follow Qubit Capital's fintech due diligence checklist and Mercury's stage-based metrics: licence or agreement, cost of compliance, credit or fraud risk. They form the model's own block, weight 2.",
@@ -79,7 +79,82 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "licence",
+            "name": {"en": "Licence, agreement or regulator correspondence", "fr": "Licence, agrément ou correspondance avec le régulateur"},
+            "requirement": {"en": "The licence or agreement held, or the regulator's correspondence on the application, and the compliance cost lines of the P&L.", "fr": "La licence ou l'agrément détenu, ou la correspondance du régulateur sur la demande, et les lignes de coût de conformité du P&L."},
+            "min_months": null
+          },
+          {
+            "id": "risk_book_24m",
+            "name": {"en": "Risk book over 24 months", "fr": "Livre de risque sur 24 mois"},
+            "requirement": {"en": "Loan, transaction or policy book with losses, defaults, fraud and chargebacks, month by month.", "fr": "Livre des prêts, des transactions ou des polices avec les pertes, les défauts, la fraude et les rétrofacturations, mois par mois."},
+            "min_months": 24
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": {"id": "Q", "name": {"en": "Licence and risk", "fr": "Licence et risque"}, "weight": 2},
+          "questions": [
+            {
+              "id": "Q1",
+              "question": {"en": "Which licence or agreement, held directly or through a partner, in which countries, since when?", "fr": "Quelle licence ou quel agrément, détenu en direct ou via un partenaire, dans quels pays, depuis quand ?"},
+              "found_if": "The licence or the regulated partner named per country, the regulator, and the date obtained; the licence or the partner contract in the annexes.",
+              "note": "A licence 'in progress' without a filing date = partial.",
+              "requires_proof": true,
+              "claim_types": ["why_now", "expansion", "other"]
+            },
+            {
+              "id": "Q2",
+              "question": {"en": "What does compliance cost, confirmed against the P&L and the audited accounts?", "fr": "Combien coûte la conformité, confirmé contre le P&L et les comptes audités ?"},
+              "found_if": "A monthly compliance cost (people, tools, audits) as a share of expenses, and the same lines in the P&L and the audited accounts.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["runway", "gross_margin", "audited_figure"]
+            },
+            {
+              "id": "Q3",
+              "question": {"en": "Credit or fraud risk: how is it underwritten and measured?", "fr": "Risque de crédit ou de fraude : comment est-il souscrit et mesuré ?"},
+              "found_if": "The underwriting or fraud rules, the denominator and the method of the loss rate, and who bears the loss (the company, a partner, an insurer).",
+              "note": "A 'low' risk without a method = absent.",
+              "requires_proof": true,
+              "claim_types": ["churn", "other"]
+            },
+            {
+              "id": "Q4",
+              "question": {"en": "Losses on the book over 36 months, by cohort?", "fr": "Pertes sur le livre sur 36 mois, par cohorte ?"},
+              "found_if": "Losses, defaults, fraud and chargebacks month by month over 36 months, by cohort, from the risk book.",
+              "note": "A single annual loss rate = partial.",
+              "requires_proof": true,
+              "claim_types": ["churn"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "licence",
+            "name": {"en": "Licence, agreement or regulator correspondence", "fr": "Licence, agrément ou correspondance avec le régulateur"},
+            "requirement": {"en": "The licence or agreement held, or the regulator's correspondence on the application, and the compliance cost lines of the P&L.", "fr": "La licence ou l'agrément détenu, ou la correspondance du régulateur sur la demande, et les lignes de coût de conformité du P&L."},
+            "min_months": null
+          },
+          {
+            "id": "risk_book_36m",
+            "name": {"en": "Risk book over 36 months", "fr": "Livre de risque sur 36 mois"},
+            "requirement": {"en": "Loan, transaction or policy book with losses, defaults, fraud and chargebacks, month by month.", "fr": "Livre des prêts, des transactions ou des polices avec les pertes, les défauts, la fraude et les rétrofacturations, mois par mois."},
+            "min_months": 36
+          }
+        ]
+      }
     }
   }
 }

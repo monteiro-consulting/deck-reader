@@ -157,8 +157,10 @@ The profile detects the model; no model detected means SaaS. The model block liv
 file (`scripts/grids/models/<model>.json`, readable copy in `grids/models/<model>.md`) and is
 applied to this grid by `grid_lib.effective_grid` in three verbs, in this order: **remove**
 questions of the stage grid (by id), **reweight** blocks or questions, **add** questions to a
-block with the block weight, or in a block the model brings. The same files hold the series A
-sections. One block per business model, never one grid per sector.
+block with the block weight, or in a block the model brings (a fourth verb, **documents**,
+adjusts the required document list of the first gate at the stages that carry one; seed has
+none). The same files hold the series A sections. One block per business model, never one grid
+per sector.
 
 | Model | What the block does to the seed grid |
 |---|---|

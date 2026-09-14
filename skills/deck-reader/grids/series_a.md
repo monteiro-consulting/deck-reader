@@ -10,7 +10,7 @@ Seed asks "does what the deck says hold up?". Series A asks "**does the machine 
 the next customer cost the same, bring the same, and sign without the founder in the room.
 
 **What the grid measures**: the completeness of the deck, and whether its statements are backed
-by the six required documents and by public sources. It does not measure the quality of the
+by the required documents of the stage and model and by public sources. It does not measure the quality of the
 company. No verdict, no threshold, no rating.
 
 ---
@@ -20,7 +20,7 @@ company. No verdict, no threshold, no rating.
 | | Seed | Series A |
 |---|---|---|
 | What is judged | Evidence of use: who pays, who comes back | Evidence of repetition: the next customer costs the same, brings the same, signs without the founder |
-| Input | The deck, plus optional annexes | The deck, plus **six required documents**: monthly P&L over 24 months, cohorts over 12 months or more, CRM export with weighted pipeline, cap table, three-year financial model, contracts of the top 10 customers |
+| Input | The deck, plus optional annexes | The deck, plus **the required documents of the stage and model**: the base list (monthly P&L over 24 months, cohorts over 12 months or more, CRM export with weighted pipeline, cap table, three-year financial model, contracts of the top 10 customers) adjusted by the model block |
 | First gate | No annex, or key figures less than half covered | **Fixed list.** A missing document stops the reading and produces the email draft. No coverage threshold |
 | Heaviest blocks | Traction, economics (weight 3) | **Unit economics, net retention (weight 3).** Raw traction drops to 2 |
 | Claim types | Revenue, customers, retention, churn, acquisition, pricing, runway, cap table, named customers, competitors, founders, funding, why now, market | The same, plus **NRR, weighted pipeline, sales cycle by segment, gross margin confirmed against the P&L, top 10 concentration, burn multiple, share of deals closed without a founder, key hires** |
@@ -42,7 +42,7 @@ Red signals of the stage:
 - A pipeline that is not weighted, or that does not cover next year's plan
 - Every deal closed by a founder
 - A key hire announced on a slide and absent from LinkedIn
-- A document of the fixed list missing
+- A document of the required list missing
 
 ---
 
@@ -52,15 +52,16 @@ Red signals of the stage:
 2. **Profile.** Sector, model type (SaaS, marketplace, consumer, e-commerce, hardware, fintech,
    biotech), B2B or B2C, announced stage. The stage picks the grid, the model picks the model
    block. No model detected means SaaS.
-3. **Documents, first gate.** An agent sorts each annex into one of the six required documents,
-   with a verbatim quote and the months covered (`annex-classifier`); the code checks the quote
-   and compares with the fixed list (`series_a_gate.py documents`):
+3. **Documents, first gate.** An agent sorts each annex into one of the required documents of
+   the stage and model, with a verbatim quote and the months covered (`annex-classifier`); the
+   code checks the quote and compares with the list, the base list below adjusted by the model
+   block's `documents` verb (`documents_gate.py documents --profile`):
    - a document missing, or covering fewer months than required: stop, email draft document by
      document, no claims, no web, no grid;
-   - all six present: continue.
+   - every document present: continue.
 4. **Claims.** Every verifiable statement of the deck, one line each with page and quote
    (`claim-extractor`, checked by `check_claims.py`). The seed types plus the series A types.
-5. **Proof in the documents.** Each claim looked up in the six documents (`annex-matcher`,
+5. **Proof in the documents.** Each claim looked up in the required documents (`annex-matcher`,
    checked and classified by `verify_matches.py`). Same gap thresholds as seed. What is not
    covered is listed in the report; it never stops the reading.
 6. **Web check**, only now, and only on what a document cannot settle: the seed scope, plus
@@ -88,7 +89,7 @@ alone.
 
 ## Blocks and questions
 
-"Proof expected" is the document, among the six, that backs the answer.
+"Proof expected" is the document, among the required ones, that backs the answer.
 
 ### Block A. Problem and customer, weight 2
 
@@ -168,20 +169,21 @@ alone.
 
 The profile detects the model; no model detected means SaaS. The model block lives in its own
 file (`scripts/grids/models/<model>.json`, readable copy in `grids/models/<model>.md`) and is
-applied to this grid by `grid_lib.effective_grid` in three verbs, in this order: **remove**
+applied to this grid by `grid_lib.effective_grid` in four verbs, in this order: **remove**
 questions of the stage grid (by id), **reweight** blocks or questions, **add** questions to a
-block with the block weight, or in a block the model brings. One block per business model,
-never one grid per sector.
+block with the block weight, or in a block the model brings, **documents** to adjust the
+required document list of the first gate (remove by id, add entries of the same shape). One
+block per business model, never one grid per sector.
 
 | Model | What the block does to the series A grid |
 |---|---|
-| SaaS (default) | Nothing. The grid is written for it. Benchmarks only |
-| Marketplace | Adds M1 to M5 to block B: GMV, take rate and net revenue over 24 months, match rate by market, concentration of both sides, both sides coming back, GMV retention by cohort |
-| Consumer | Adds DAU/MAU, flattening cohorts and organic share to block B; removes the ACV by segment and the sales cycle; ARR (B1) drops to weight 1 |
-| E-commerce | Adds contribution margin per order and CAC by channel with payback to block C, 60-day repeat rate by cohort to block D; removes the generic CAC and the sales cycle |
-| Hardware | Adds margin by volume (1,000 / 10,000 / 100,000 units), bill of materials and MOQs to block C; doubles the weight of unit economics |
-| Fintech | Adds a block Q, weight 2: licence or agreement, cost of compliance, credit or fraud risk |
-| Biotech | Traction and net retention to weight 0, unit economics to 1; removes the sales cycle; adds a block R, weight 3: milestones, IP, regulatory path |
+| SaaS (default) | Nothing. The grid and the document list are written for it. Benchmarks only |
+| Marketplace | Adds M1 to M5 to block B: GMV, take rate and net revenue over 24 months, match rate by market, concentration of both sides, both sides coming back, GMV retention by cohort. Documents: adds the monthly GMV by side over 24 months |
+| Consumer | Adds DAU/MAU, flattening cohorts and organic share to block B; removes the ACV by segment and the sales cycle; ARR (B1) drops to weight 1. Documents: drops the CRM export and the top 10 contracts, adds the product analytics export over 12 months |
+| E-commerce | Adds contribution margin per order and CAC by channel with payback to block C, 60-day repeat rate by cohort to block D; removes the generic CAC and the sales cycle. Documents: drops the CRM export and the top 10 contracts, adds the orders export over 24 months |
+| Hardware | Adds margin by volume (1,000 / 10,000 / 100,000 units), bill of materials and MOQs to block C; doubles the weight of unit economics. Documents: adds the bill of materials and supplier terms |
+| Fintech | Adds a block Q, weight 2: licence or agreement, cost of compliance, credit or fraud risk. Documents: adds the licence or regulator correspondence and the risk book over 24 months |
+| Biotech | Traction and net retention to weight 0, unit economics to 1; removes the sales cycle; adds a block R, weight 3: milestones, IP, regulatory path. Documents: drops the cohorts, the CRM export and the top 10 contracts, adds the clinical data package and the patent schedule |
 
 `scripts/render_grid.py <stage> <model>` writes the effective grid, model block applied and
 benchmarks listed, as one markdown document.
@@ -258,7 +260,7 @@ pipeline are never "checked on the web".
 - **The reading**: the three main gaps, the questions for the call, what the deck does not say,
   what did not hold up.
 - **Gaps to probe**: each claim left to probe, with both sides and the reviewer's explanation.
-- **The documents to request**: the fixed list, document by document, with the email draft.
+- **The documents to request**: the list of the stage and model, document by document, with the email draft.
   This replaces the seed leftovers email. The tool writes the draft; the user sends it, or not.
 - **The claims table**: every statement, its status, what backs it, and the benchmark next to
   each figure, with source and date.
@@ -274,8 +276,10 @@ Those of seed, without exception, plus:
 - A benchmark is an order of magnitude displayed next to the deck figure, never a criterion of
   the grid. It lives in its own file, per model and stage, with its value, source and date. A
   benchmark without a dated source stays empty.
-- The document list is the same for every series A deck. The tool does not adapt it to the
-  deck, does not shorten it, does not ask for more.
+- The document list is the same for every series A deck of one business model: the base list
+  of this grid, adjusted by the model block (`skills/deck-reader/grids/models/<model>.md`,
+  "Series A: documents"). The tool does not adapt it to the deck, does not shorten it, does not
+  ask for more.
 
 ---
 
@@ -323,3 +327,4 @@ what the tool does.
 | Date | Change | Triggered by |
 |---|---|---|
 | 2026-09-13 | First version: series A grid, fixed document list, new claim types, wider web check, benchmarks per model and stage, model blocks in three verbs | Research on existing series A grids |
+| 2026-09-14 | The document list becomes the one of the stage and the model: the model blocks gain a fourth verb, documents (remove, add), and the gate reads the effective grid (`documents_gate.py --profile`). Grid unchanged | A consumer app has no CRM pipeline, a biotech no cohorts, a hardware company a BOM to show |

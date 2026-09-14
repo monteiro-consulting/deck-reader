@@ -12,24 +12,38 @@ of its business model.
   the public web with sources on both sides. A figure with no document behind it cannot score
   higher than partial. What is missing goes into a draft email to the founder. What is
   contradicted goes through a second independent review before the reading stops.
-- **Series A**: the same engine, another question: does the machine repeat? Six documents are
-  required, always the same (monthly P&L over 24 months, cohorts over 12 months or more, CRM
-  export with weighted pipeline, cap table, three-year financial model, contracts of the top 10
-  customers); a missing one stops the reading with the request email. Unit economics and net
+- **Series A**: the same engine, another question: does the machine repeat? A list of required
+  documents, the same for every deck of one stage and one business model (the base list, written
+  for SaaS: monthly P&L over 24 months, cohorts over 12 months or more, CRM export with weighted
+  pipeline, cap table, three-year financial model, contracts of the top 10 customers; the model
+  block adjusts it, a consumer app drops the CRM and the contracts for a product analytics
+  export, a hardware company adds its bill of materials); a missing one stops the reading with
+  the request email. Unit economics and net
   retention are the heaviest blocks. New claim types (NRR, weighted pipeline, sales cycle by
   segment, gross margin against the P&L, top 10 concentration, burn multiple, deals closed
   without a founder, key hires) and a wider web check (public reviews, open job posts, press of
   previous rounds, key hires on LinkedIn). Benchmarks for the model and the stage are shown next
   to every figure, with source and date, and never enter the score.
+- **Series B**: the same engine, another question: does the machine hold at scale, without the
+  founders? Ten required documents for SaaS, over 36 months where series A asked 24 (monthly
+  P&L, audited accounts, cohorts by segment, CRM with win/loss, sales roster with quota
+  attainment, cap table, three-year model, top 20 contracts, board pack, org chart; the model
+  block adjusts the list). Efficient growth and repeatability are the heaviest blocks: a second
+  engine with its own economics, quota attainment, rep ramp, deals closed by reps hired in the
+  year, a burn multiple that falls as ARR rises. New claim types (Rule of 40, magic number,
+  quota attainment, rep ramp, second engine, executive team and departures, headcount, board,
+  breakeven, audited figures, win rate, secondary or debt, expansion) and a wider web check
+  (every executive on LinkedIn, headcount trend, employee reviews, job posts by country,
+  registries for subsidiaries, press of every round).
 
 It never says whether to invest. It says what to ask, and what did not hold up.
 
 **One grid per stage, one block per business model, one engine.** The deck's announced stage
-picks the grid (`scripts/grids/preseed.json`, `seed.json`, `series_a.json`). The detected
+picks the grid (`scripts/grids/preseed.json`, `seed.json`, `series_a.json`, `series_b.json`). The detected
 business model picks the model block (`scripts/grids/models/<model>.json`: saas, marketplace,
 consumer, ecommerce, hardware, fintech, biotech; no model detected means saas), applied to the
-stage grid in three verbs: remove, reweight, add. A deck of a stage with no grid is refused with
-a one-line explanation. Never one grid for all, never one grid per sector.
+stage grid in four verbs: remove, reweight, add, documents. A deck of a stage with no grid is
+refused with a one-line explanation. Never one grid for all, never one grid per sector.
 
 ## Usage
 
@@ -40,7 +54,7 @@ a one-line explanation. Never one grid for all, never one grid per sector.
 ```
 
 Output: `path/to/deck.reading.md` and the same reading as `path/to/deck.reading.pdf`, and at
-seed and series A, when documents are missing, `path/to/deck.founder-email.md`. Add
+seed, series A and series B, when documents are missing, `path/to/deck.founder-email.md`. Add
 `--keep-work` to keep the intermediate files in a temporary folder for inspection. Annexes:
 `.pdf`, `.csv`, `.tsv`, `.xlsx`, `.txt`, `.md`, `.json`.
 
@@ -48,6 +62,7 @@ To read a grid in one piece, model block applied and benchmarks listed:
 
 ```bash
 python scripts/render_grid.py series_a saas
+python scripts/render_grid.py series_b biotech --lang fr
 python scripts/render_grid.py seed marketplace --lang fr --out seed-marketplace.md
 ```
 
@@ -80,13 +95,13 @@ takes every decision that must not go through a model.
 | 6S. Double check | Every blatant contradiction goes to a second reviewer whose only job is to find an honest explanation (date, definition, scope, unit, stale source, homonym). With one, the claim becomes a question for the call. Without one, the second gate stops the reading and shows the sources on both sides | `contradiction-reviewer`, `seed_gate.py` |
 | 5. Grid, with proof | Checkers cite the claims they rely on. A figure without a proven or confirmed claim is capped at partial; an answer citing a gap to probe is lowered one step. Code, not the checker | `apply_proof_cap.py` |
 
-### Series A, between the profile and the grid
+### Series A and series B, between the profile and the grid
 
 | Step | What happens | Who |
 |---|---|---|
-| 3A. Documents | Each annex sorted into one of the six required documents with a verbatim quote and the months covered; the quote is checked by code. First gate, fixed list: a document missing, or covering fewer months than required, stops the reading with the request email. No coverage threshold | `annex_text.py`, `annex-classifier`, `series_a_gate.py`, `founder_email.py` |
-| 4A. Claims and proof | As at seed, with the series A claim types. Claims the documents do not cover are listed, never a stop. No leftovers email: the document list replaces it | `claim-extractor`, `check_claims.py`, `annex-matcher`, `verify_matches.py` |
-| 5S, 6S | As at seed, with public reviews, open job posts, the press of previous rounds and the LinkedIn profile of each announced key hire added to the web scope | `web-verifier`, `verify_web.py`, `contradiction-reviewer`, `series_a_gate.py` |
+| 3A. Documents | Each annex sorted into one of the required documents of the stage and model with a verbatim quote and the months or items covered; the quote is checked by code. First gate: the list is the one of the stage grid (six documents for SaaS at series A, ten at series B) adjusted by the model block, never by the deck; a document missing, or covering fewer months or items than required, stops the reading with the request email. No coverage threshold | `annex_text.py`, `annex-classifier`, `documents_gate.py`, `founder_email.py` |
+| 4A. Claims and proof | As at seed, with the series A or series B claim types. A figure the deck attributes to the audited accounts is looked up there, not in the P&L. Claims the documents do not cover are listed, never a stop. No leftovers email: the document list replaces it | `claim-extractor`, `check_claims.py`, `annex-matcher`, `verify_matches.py` |
+| 5S, 6S | As at seed, with public reviews, open job posts, the press of previous rounds and the LinkedIn profile of each announced key hire added to the web scope; at series B also every executive on LinkedIn, the headcount trend and departures, employee reviews, job posts by country, registries for announced subsidiaries, the press of every round | `web-verifier`, `verify_web.py`, `contradiction-reviewer`, `documents_gate.py` |
 | 7. Report | Benchmarks for the model and the stage shown next to each figure, with source and date. Displayed, never scored | `report.py`, `scripts/grids/benchmarks/` |
 
 The gate decisions, the gap thresholds, the document list, the source rule, the model blocks and
@@ -96,13 +111,14 @@ not hidden in a prompt.
 ## Model blocks
 
 `scripts/grids/models/<model>.json`, readable copy in `skills/deck-reader/grids/models/`. Per
-stage, three verbs applied in this order by `grid_lib.effective_grid`:
+stage, four verbs applied in this order by `grid_lib.effective_grid`:
 
 | Verb | Effect |
 |---|---|
 | `remove` | question ids of the stage grid taken out |
 | `reweight` | new weight for a block or a question; a block at weight 0 is for information, never counts, never red |
 | `add` | questions appended to a block of the stage grid, with its weight, or to a block the model brings |
+| `documents` | the required document list of the first gate (`annex_gate.required_documents`, series A and series B) adjusted: `remove` by document id, `add` with entries of the grid's shape (`id`, `name`, `requirement`, `min_months`, optional `min_count`). Only where the stage grid has a list; an error otherwise |
 
 Examples: biotech puts traction at weight 0 and adds milestones, IP and regulatory path;
 hardware adds margin at 1,000 / 10,000 / 100,000 units, bill of materials and MOQs, and doubles
@@ -110,6 +126,21 @@ economics; consumer adds DAU/MAU, flattening cohorts and organic share, and lowe
 ecommerce adds contribution margin per order after shipping and returns, CAC by channel and
 60-day repeat; fintech adds licence, cost of compliance, credit or fraud risk. Marketplace at
 seed is exactly the previous grid (a test checks it). The pre-seed grid has no model section.
+
+At series A the base document list is written for SaaS. The model block adjusts it: marketplace
+adds the monthly GMV by side; consumer and ecommerce drop the CRM export and the top 10
+contracts for a product analytics export or an orders export; hardware adds the bill of
+materials and supplier terms; fintech adds the licence and the risk book; biotech drops the
+cohorts, the CRM and the contracts for the clinical data package and the patent schedule. The
+deck never adjusts the list.
+
+At series B the same blocks apply to the ten-document list, 36 months where series A asked 24:
+marketplace adds the monthly GMV by side over 36 months; consumer and ecommerce drop the CRM
+export, the sales roster and the top 20 contracts for a product analytics export over 24 months
+or an orders export over 36 months, and drop the magic number, the pipeline and the sales-team
+questions; hardware adds the inventory and warranty history to the bill of materials; fintech
+adds a fourth question, losses on the book over 36 months, and the risk book over 36 months;
+biotech puts traction, repeatability and net retention at weight 0 and drops the cohorts as well.
 
 Benchmarks are per model and per stage in `scripts/grids/benchmarks/<model>.json`, each with
 value, source and date. An entry with no dated source is left empty, on purpose.
@@ -122,20 +153,22 @@ skills/deck-reader/SKILL.md            the orchestrator, routes by stage
 skills/deck-reader/grids/preseed.md    the pre-seed grid, readable
 skills/deck-reader/grids/seed.md       the seed grid, readable, with gates and thresholds
 skills/deck-reader/grids/series_a.md   the series A grid, readable, with the document list
+skills/deck-reader/grids/series_b.md   the series B grid, readable, with the ten-document list
 skills/deck-reader/grids/models/       one readable model block per business model
 agents/page-transcriber.md             sonnet, every stage
 agents/deck-profiler.md                sonnet, every stage
 agents/block-checker.md                sonnet, one per block, every stage
 agents/report-writer.md                opus, every stage
-agents/claim-extractor.md              sonnet, seed and series A
-agents/annex-matcher.md                sonnet, seed and series A
-agents/annex-classifier.md             sonnet, series A: which required document is each annex
-agents/web-verifier.md                 sonnet, seed and series A, the only agent on the web
-agents/contradiction-reviewer.md       opus, seed and series A
+agents/claim-extractor.md              sonnet, seed, series A and series B
+agents/annex-matcher.md                sonnet, seed, series A and series B
+agents/annex-classifier.md             sonnet, series A and series B: which required document of the stage and model is each annex
+agents/web-verifier.md                 sonnet, seed, series A and series B, the only agent on the web
+agents/contradiction-reviewer.md       opus, seed, series A and series B
 scripts/grids/preseed.json             grid as data
 scripts/grids/seed.json                grid as data, plus claim types, gates, thresholds
-scripts/grids/series_a.json            grid as data, plus the fixed document list
-scripts/grids/models/<model>.json      model blocks: remove, reweight, add, per stage
+scripts/grids/series_a.json            grid as data, plus the base document list of the first gate
+scripts/grids/series_b.json            grid as data, plus the base ten-document list and the series B claim types
+scripts/grids/models/<model>.json      model blocks: remove, reweight, add, documents, per stage
 scripts/grids/benchmarks/<model>.json  benchmarks per model and stage, value, source, date
 scripts/grid_lib.py                    grid by stage, model block assembly, benchmarks
 scripts/render_grid.py                 the effective grid of a stage and a model as one markdown
@@ -147,7 +180,7 @@ scripts/check_claims.py                claim quotes exist on the cited page
 scripts/verify_matches.py              annex quotes exist; gaps classified; annex status
 scripts/verify_web.py                  source rule enforced; final status per claim
 scripts/seed_gate.py                   the two seed stop decisions
-scripts/series_a_gate.py               the series A stop decisions: fixed document list, contradictions
+scripts/documents_gate.py              the stop decisions of the stages with a document list (series A, series B): documents of the stage and model, contradictions
 scripts/founder_email.py               the email draft (never sent by the tool)
 scripts/grid_block.py                  one block's questions
 scripts/verify_quotes.py               quote exists verbatim on the cited page
@@ -185,8 +218,9 @@ python -m unittest discover -s tests
   annex match, an annex classification or a web source without one.
 - A red block produces a question, not a judgement. A contradiction produces the sources on
   both sides, a review, and a question or a stop, never a verdict.
-- The tool can only stop on something false, never on something imprecise. At series A it also
-  stops on a missing document, which is a fact about the file set, not about the company.
+- The tool can only stop on something false, never on something imprecise. At series A and
+  series B it also stops on a missing document, which is a fact about the file set, not about
+  the company.
 - A benchmark is displayed next to the figure with its source and date. It never enters the
   score, and one without a dated source stays empty.
 - The tool never sends the founder email.
@@ -202,11 +236,13 @@ python -m unittest discover -s tests
   confirmation passes exist for this reason, inside the 65-80 % band.
 - The web check depends on what is public. A customer with no public trace is unverifiable, not
   contradicted; the report says so and the call clears it up.
-- The gap thresholds, the document minimums (24, 12, 36 months, 10 contracts) and the model
-  weights are a first setting. They will be corrected at the first post-mortems, in the grid
-  files, in the open.
+- The gap thresholds, the document minimums (24, 12, 36 months, 10 contracts at series A; 36,
+  24, 12 months, 2 fiscal years, 20 contracts, 4 quarters at series B) and the model weights are
+  a first setting. They will be corrected at the first post-mortems, in the grid files, in the
+  open.
 - Several benchmarks have no dated source yet (sales cycle by segment, pipeline coverage, share
-  of deals closed without a founder, BOM and MOQ, fintech loss rates, biotech IP and phase
-  durations). They are listed empty rather than invented.
+  of deals closed without a founder, quota attainment, rep ramp, win rate, series B round size,
+  BOM and MOQ, fintech loss rates, biotech IP and phase durations). They are listed empty rather
+  than invented.
 - The grid cannot tell a founder who presents poorly from a founder who did nothing. That is the
   call's job.

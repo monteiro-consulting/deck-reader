@@ -13,7 +13,7 @@ Usage (reading stopped):
               --abort-kind stage|no_annexes|insufficient_annexes|contradiction --abort-reason "..."
               [--claims ... --annexes ... --gate ... --email ...]
 
---grid is a stage name (preseed, seed, series_a) or a path. --lang selects the labels. Shipped: en, fr.
+--grid is a stage name (preseed, seed, series_a, series_b) or a path. --lang selects the labels. Shipped: en, fr.
 Any other code falls back to English labels; the writer's prose (reading.md) is in whatever
 language the orchestrator requested. Grid question wording follows the same rule.
 """
@@ -26,7 +26,15 @@ import sys
 
 from grid_lib import GridError, effective_grid, load_benchmarks, load_grid, stage_key
 
-STAGES_WITH_ANNEXES = ("seed", "series-a")
+STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b")
+
+# How a grid is named in the disclaimer of a stage that carries a required document list. Any
+# stage whose grid has annex_gate.required_documents uses disclaimer_documents with this name;
+# a new stage needs one row here, not a new disclaimer.
+GRID_NAMES = {
+    "series-a": {"en": "series A grid", "fr": "grille série A"},
+    "series-b": {"en": "series B grid", "fr": "grille série B"},
+}
 
 LABELS = {
     "en": {
@@ -39,7 +47,7 @@ LABELS = {
         "reference_transcription": "model transcription (PDF text layer unusable)",
         "disclaimer_preseed": "This report measures the completeness of the deck against the pre-seed grid: whether the deck answers the questions an investor will ask. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation.",
         "disclaimer_seed": "This report measures the completeness of the deck against the seed grid, and whether what the deck states holds up against the annexes provided and public sources. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation. A figure the deck states without a document behind it cannot score higher than partial.",
-        "disclaimer_series-a": "This report measures the completeness of the deck against the series A grid, and whether what the deck states holds up against the six required documents and public sources. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation. A figure the deck states without a document behind it cannot score higher than partial. Benchmarks are shown next to the figures with their source and date; they never enter the score.",
+        "disclaimer_documents": "This report measures the completeness of the deck against the {grid}, and whether what the deck states holds up against the required documents of its stage and business model and public sources. It does not measure the quality of the company. It contains no verdict, no rating and no investment recommendation. A figure the deck states without a document behind it cannot score higher than partial. Benchmarks are shown next to the figures with their source and date; they never enter the score.",
         "image_note": "Text that only appears inside images (charts, screenshots) is not in the PDF text layer and cannot be cited; it is treated as absent.",
         "profile": "Deck profile",
         "sector": "Sector",
@@ -108,9 +116,9 @@ LABELS = {
         "abort_no_annexes": "The deck came without any supporting document. At seed, a figure without a document behind it cannot be read as proven, so the reading stops here. No web check, no grid, no score. The email draft below asks the founder for the documents.",
         "abort_insufficient_annexes": "The documents provided do not cover enough of the key figures the deck states (revenue, customers, retention). The reading stops here, before any web check or scoring. The email draft below lists, statement by statement, what would be needed.",
         "abort_contradiction": "At least one statement of the deck is contradicted by the documents or by public sources, beyond what a different date, definition or source could explain, after a second independent review looked for such an explanation. The reading stops here and shows the sources on both sides. This is not a verdict on the company: the investor sees the evidence and decides. Everything read so far is kept below.",
-        "abort_missing_documents": "At series A every deck is read with the same six documents: monthly P&L over 24 months, cohorts over 12 months or more, CRM export with weighted pipeline, cap table, three-year financial model, contracts of the top 10 customers. At least one is missing or incomplete, so the reading stops here, before any claim, web check or scoring. The email draft below lists them, document by document.",
-        "documents_required": "Required documents (fixed list)",
-        "documents_all_present": "Every document of the fixed list is present.",
+        "abort_missing_documents": "At this stage every deck is read with the same list of documents for its stage and business model. At least one is missing or incomplete, so the reading stops here, before any claim, web check or scoring. The email draft below lists them, document by document.",
+        "documents_required": "Required documents (stage and model list)",
+        "documents_all_present": "Every document of the list is present.",
         "doc_line": "- **{name}**: {requirement} ({reason})",
         "doc_present": "present",
         "benchmark": "Benchmark",
@@ -130,7 +138,7 @@ LABELS = {
         "reference_transcription": "la transcription par le modèle (couche texte du PDF inutilisable)",
         "disclaimer_preseed": "Ce rapport mesure la complétude du deck au regard de la grille pre-seed : le deck répond-il aux questions qu'un investisseur va poser. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement.",
         "disclaimer_seed": "Ce rapport mesure la complétude du deck au regard de la grille seed, et si ce que le deck affirme tient face aux annexes fournies et aux sources publiques. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement. Un chiffre avancé sans document derrière ne peut pas dépasser « partielle ».",
-        "disclaimer_series-a": "Ce rapport mesure la complétude du deck au regard de la grille série A, et si ce que le deck affirme tient face aux six documents obligatoires et aux sources publiques. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement. Un chiffre avancé sans document derrière ne peut pas dépasser « partielle ». Les repères sont affichés à côté des chiffres avec leur source et leur date ; ils n'entrent jamais dans le score.",
+        "disclaimer_documents": "Ce rapport mesure la complétude du deck au regard de la {grid}, et si ce que le deck affirme tient face aux documents obligatoires de son stade et de son modèle économique et aux sources publiques. Il ne mesure pas la qualité de l'entreprise. Il ne contient ni verdict, ni note, ni recommandation d'investissement. Un chiffre avancé sans document derrière ne peut pas dépasser « partielle ». Les repères sont affichés à côté des chiffres avec leur source et leur date ; ils n'entrent jamais dans le score.",
         "image_note": "Le texte qui n'apparaît que dans des images (graphiques, captures) n'est pas dans la couche texte du PDF et ne peut pas être cité ; il est traité comme absent.",
         "profile": "Fiche du deck",
         "sector": "Secteur",
@@ -199,9 +207,9 @@ LABELS = {
         "abort_no_annexes": "Le deck est arrivé sans aucune pièce justificative. Au seed, un chiffre sans document derrière ne peut pas être lu comme prouvé, donc la lecture s'arrête ici. Pas de vérification web, pas de grille, pas de score. Le brouillon d'email ci-dessous demande les documents au fondateur.",
         "abort_insufficient_annexes": "Les documents fournis ne couvrent pas assez des chiffres clés que le deck avance (revenus, clients, rétention). La lecture s'arrête ici, avant toute vérification web et tout score. Le brouillon d'email ci-dessous liste, affirmation par affirmation, ce qu'il faudrait.",
         "abort_contradiction": "Au moins une affirmation du deck est contredite par les documents ou par des sources publiques, au-delà de ce qu'une date, une définition ou une source différente pourrait expliquer, après qu'une seconde relecture indépendante a cherché une telle explication. La lecture s'arrête ici et montre les sources des deux côtés. Ce n'est pas un verdict sur l'entreprise : l'investisseur voit les preuves et décide. Tout ce qui a été lu est conservé ci-dessous.",
-        "abort_missing_documents": "En série A, chaque deck est lu avec les six mêmes documents : P&L mensuel sur 24 mois, cohortes sur 12 mois et plus, export CRM avec pipeline pondéré, table de capitalisation, modèle financier sur 3 ans, contrats des 10 premiers clients. Au moins un manque ou est incomplet, donc la lecture s'arrête ici, avant toute affirmation, vérification web ou score. Le brouillon d'email ci-dessous les liste, document par document.",
-        "documents_required": "Documents obligatoires (liste fixe)",
-        "documents_all_present": "Tous les documents de la liste fixe sont présents.",
+        "abort_missing_documents": "À ce stade, chaque deck est lu avec la même liste de documents pour son stade et son modèle économique. Au moins un manque ou est incomplet, donc la lecture s'arrête ici, avant toute affirmation, vérification web ou score. Le brouillon d'email ci-dessous les liste, document par document.",
+        "documents_required": "Documents obligatoires (liste du stade et du modèle)",
+        "documents_all_present": "Tous les documents de la liste sont présents.",
         "doc_line": "- **{name}** : {requirement} ({reason})",
         "doc_present": "présent",
         "benchmark": "Repère",
@@ -260,6 +268,20 @@ def evidence_str(profile, key, lab):
     return " · ".join(parts)
 
 
+def disclaimer(lab, grid):
+    """The disclaimer of the stage: pre-seed, seed, or the one of a stage with a document list, named after its grid."""
+    stage = grid.get("stage", "")
+    if stage == "pre-seed":
+        return lab["disclaimer_preseed"]
+    if stage == "seed":
+        return lab["disclaimer_seed"]
+    if isinstance(grid.get("annex_gate"), dict) and "required_documents" in grid["annex_gate"]:
+        lang = "fr" if lab is LABELS["fr"] else "en"
+        name = GRID_NAMES.get(stage, {}).get(lang) or f"{stage} grid"
+        return lab["disclaimer_documents"].format(grid=name)
+    return lab["disclaimer_preseed"]
+
+
 def header(lab, deck, grid, date, reference_source):
     lines = [f"# {lab['title']}: {os.path.basename(deck)}", ""]
     meta = [f"**{lab['stage']}**: {grid['stage']}", f"**{lab['grid_version']}**: {grid['version']}", f"**{lab['read_on']}**: {date}"]
@@ -268,8 +290,7 @@ def header(lab, deck, grid, date, reference_source):
         meta.append(f"**{lab['reference']}**: {ref}")
     lines.append(" · ".join(meta))
     lines.append("")
-    key = "disclaimer_preseed" if grid["stage"] == "pre-seed" else f"disclaimer_{grid['stage']}"
-    lines.append(f"> {lab.get(key, lab['disclaimer_preseed'])}")
+    lines.append(f"> {disclaimer(lab, grid)}")
     if reference_source == "pdf":
         lines.append(">")
         lines.append(f"> {lab['image_note']}")
@@ -579,7 +600,7 @@ def main(argv=None):
     ap.add_argument("--pages", help="pages.json, for the reference_source header line")
     ap.add_argument("--annexes", help="annexes.json (seed)")
     ap.add_argument("--claims", help="claims.final.json or claims.annex.json (seed)")
-    ap.add_argument("--gate", help="gate.json from seed_gate.py annexes (seed) or series_a_gate.py documents (series A)")
+    ap.add_argument("--gate", help="gate.json from seed_gate.py annexes (seed) or documents_gate.py documents (stages with a required document list)")
     ap.add_argument("--email", help="founder email draft (seed)")
     ap.add_argument("--lang", default="en")
     ap.add_argument("--date", default=dt.date.today().isoformat())

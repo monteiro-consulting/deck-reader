@@ -1,6 +1,6 @@
 {
   "model": "ecommerce",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "E-commerce and D2C", "fr": "E-commerce et D2C"},
   "principle": {
     "en": "Physical goods sold online. The order is the unit: what is left after goods, shipping, returns and marketing, and whether the customer orders again. The questions follow Daasity's ten D2C metrics and Fairview's D2C unit economics; the generic CAC and the sales cycle are replaced.",
@@ -90,7 +90,69 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "top10_contracts"],
+        "add": [
+          {
+            "id": "orders_export_24m",
+            "name": {"en": "Orders export over 24 months", "fr": "Export des commandes sur 24 mois"},
+            "requirement": {"en": "Every order with revenue, cost of goods, shipping, returns, and marketing spend by channel, month by month.", "fr": "Chaque commande avec son revenu, le coût des marchandises, la livraison, les retours et les dépenses marketing par canal, mois par mois."},
+            "min_months": 24
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": ["C5", "C6", "D4", "D5", "D6"],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "C",
+          "questions": [
+            {
+              "id": "O1",
+              "question": {"en": "Contribution margin per order, after shipping and returns, over 36 months?", "fr": "Marge de contribution par commande, après livraison et retours, sur 36 mois ?"},
+              "found_if": "Net sales per order minus goods, shipping, payment fees, returns and refunds, month by month over 36 months, matching the P&L and the audited accounts.",
+              "note": "A gross margin that stops at the goods = partial. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["gross_margin", "revenue", "audited_figure"]
+            },
+            {
+              "id": "O2",
+              "question": {"en": "Customer acquisition cost by channel, paid and blended, and its payback?", "fr": "CAC par canal, payant et mixte, et son délai de récupération ?"},
+              "found_if": "A CAC per channel, paid and blended, the spend and the orders behind it, and the months of contribution margin needed to recover it, from the orders export.",
+              "note": "A blended CAC alone = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition"]
+            }
+          ]
+        },
+        {
+          "block": "E",
+          "questions": [
+            {
+              "id": "O3",
+              "question": {"en": "What share of customers order again within 60 days, cohort by cohort?", "fr": "Quelle part des clients recommande sous 60 jours, cohorte par cohorte ?"},
+              "found_if": "A 60-day repeat purchase rate by monthly acquisition cohort over 24 months or more.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "sales_roster", "top20_contracts"],
+        "add": [
+          {
+            "id": "orders_export_36m",
+            "name": {"en": "Orders export over 36 months", "fr": "Export des commandes sur 36 mois"},
+            "requirement": {"en": "Every order with revenue, cost of goods, shipping, returns, and marketing spend by channel, month by month.", "fr": "Chaque commande avec son revenu, le coût des marchandises, la livraison, les retours et les dépenses marketing par canal, mois par mois."},
+            "min_months": 36
+          }
+        ]
+      }
     }
   }
 }

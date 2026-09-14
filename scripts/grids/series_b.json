@@ -1,0 +1,532 @@
+{
+  "stage": "series-b",
+  "version": "2026-09-14",
+  "scale": {
+    "found": 2,
+    "partial": 1,
+    "absent": 0
+  },
+  "red_block_threshold_percent": 50,
+  "call_question_block_weight": 3,
+  "confirmation": {
+    "trigger_min_percent": 65,
+    "trigger_max_percent": 80,
+    "extra_passes": 2,
+    "rule": "When the first-pass deck completeness is within [trigger_min_percent, trigger_max_percent], run extra_passes more independent checker passes and take, per question, the median value of all passes. A null bound is disabled."
+  },
+  "proof": {
+    "rule": "A question marked requires_proof cannot be 'found' from the deck alone. The checker must cite at least one claim whose status is proven (annex) or confirmed (web); otherwise the code caps the value at 'partial'. A question citing a claim left as 'to_probe' after review is lowered by one step.",
+    "cap_value": "partial"
+  },
+  "annex_gate": {
+    "rule": "Fixed list, per stage and business model: the base list below is written for SaaS, the model block adjusts it with its documents verb, the deck never does. Every document must be present, readable, and cover at least min_months, or hold at least min_count items, when one is given. A missing or too short document stops the reading and produces the request email, document by document. There is no coverage threshold at series B: the list is the gate. Claims left uncovered after matching are listed in the report, they never stop the reading.",
+    "required_documents": [
+      {
+        "id": "pnl_36m",
+        "name": {"en": "Monthly P&L over 36 months", "fr": "P&L mensuel sur 36 mois"},
+        "requirement": {"en": "Revenue, cost of revenue, operating expenses by function (sales and marketing, R&D, G&A), net burn, month by month.", "fr": "Revenus, coût des ventes, charges par fonction (ventes et marketing, R&D, frais généraux), burn net, mois par mois."},
+        "min_months": 36
+      },
+      {
+        "id": "accounts_audited",
+        "name": {"en": "Audited or reviewed annual accounts, last two fiscal years", "fr": "Comptes annuels audités ou revus, deux derniers exercices"},
+        "requirement": {"en": "Balance sheet, income statement and the auditor's or reviewer's report, for each of the last two fiscal years.", "fr": "Bilan, compte de résultat et rapport de l'auditeur ou du réviseur, pour chacun des deux derniers exercices."},
+        "min_months": null,
+        "min_count": 2
+      },
+      {
+        "id": "cohorts_24m",
+        "name": {"en": "Cohorts by segment over 24 months or more", "fr": "Cohortes par segment sur 24 mois et plus"},
+        "requirement": {"en": "Revenue and logo retention by monthly acquisition cohort, split by segment.", "fr": "Rétention du revenu et des logos par cohorte mensuelle d'acquisition, ventilée par segment."},
+        "min_months": 24
+      },
+      {
+        "id": "crm_pipeline",
+        "name": {"en": "CRM export with weighted pipeline and win/loss", "fr": "Export CRM avec pipeline pondéré et win/loss"},
+        "requirement": {"en": "Every deal with stage, probability, amount, owner, segment, first contact and signature dates; lost deals with the reason and the competitor.", "fr": "Chaque affaire avec son étape, sa probabilité, son montant, son propriétaire, son segment, ses dates de premier contact et de signature ; les affaires perdues avec la raison et le concurrent."},
+        "min_months": null
+      },
+      {
+        "id": "sales_roster",
+        "name": {"en": "Sales team roster with quota attainment over 12 months", "fr": "Effectif commercial avec l'atteinte des quotas sur 12 mois"},
+        "requirement": {"en": "Each rep with start date, quota, attainment by quarter, and departures.", "fr": "Chaque commercial avec sa date d'entrée, son quota, son atteinte par trimestre, et les départs."},
+        "min_months": 12
+      },
+      {
+        "id": "cap_table",
+        "name": {"en": "Cap table", "fr": "Table de capitalisation"},
+        "requirement": {"en": "Every holder with its share, the option pool and what is left to grant, the past rounds.", "fr": "Chaque détenteur avec sa part, le pool d'options et ce qui reste à attribuer, les tours passés."},
+        "min_months": null
+      },
+      {
+        "id": "model_3y",
+        "name": {"en": "Three-year financial model", "fr": "Modèle financier sur 3 ans"},
+        "requirement": {"en": "Revenue by segment, expenses by function, cash, hires, month by month over 36 months, and the breakeven month if planned.", "fr": "Revenus par segment, charges par fonction, trésorerie, recrutements, mois par mois sur 36 mois, et le mois du point mort s'il est prévu."},
+        "min_months": 36
+      },
+      {
+        "id": "top20_contracts",
+        "name": {"en": "Contracts of the top 20 customers", "fr": "Contrats des 20 premiers clients"},
+        "requirement": {"en": "The signed contract of each of the twenty largest customers by ARR.", "fr": "Le contrat signé de chacun des vingt premiers clients par ARR."},
+        "min_months": null,
+        "min_count": 20
+      },
+      {
+        "id": "board_pack_4q",
+        "name": {"en": "Board decks or minutes, last four quarters", "fr": "Supports ou comptes rendus de board, quatre derniers trimestres"},
+        "requirement": {"en": "The board deck or the minutes of each of the last four quarters.", "fr": "Le support de board ou le compte rendu de chacun des quatre derniers trimestres."},
+        "min_months": null,
+        "min_count": 4
+      },
+      {
+        "id": "org_chart",
+        "name": {"en": "Org chart and headcount history over 24 months", "fr": "Organigramme et historique des effectifs sur 24 mois"},
+        "requirement": {"en": "Headcount by function month by month, start and end dates, and the executive team with start dates.", "fr": "Effectifs par fonction mois par mois, dates d'entrée et de sortie, et l'équipe de direction avec ses dates d'entrée."},
+        "min_months": 24
+      }
+    ]
+  },
+  "gaps": {
+    "rule": "A gap between a deck figure and the figure found in an annex or on the web is classified by code. Ratio = |deck - found| / max(|found|, 1). minor: ratio <= minor_max_ratio, noted, no penalty. to_probe: ratio <= probe_max_ratio, becomes a question for the call. blatant: above, or the fact does not exist; goes to the reviewer, then stops the reading if no honest explanation is found. Non-numeric contradictions (a named customer that does not exist, an executive not on LinkedIn) are blatant by default.",
+    "minor_max_ratio": 0.25,
+    "probe_max_ratio": 1.0
+  },
+  "web": {
+    "rule": "A claim is confirmed or contradicted on the web only with at least min_independent_sources sources on distinct domains, after searching both for and against. Otherwise it is unverifiable, which is a valid state, never 'probably false'. Series B keeps the series A scope (public reviews, open job posts, the press of previous rounds, the LinkedIn profile of every announced key hire) and adds the LinkedIn profile of every executive, the LinkedIn headcount trend and the departures, employee reviews (Glassdoor or the local equivalent), job posts by country against the geographic plan, company registries for announced subsidiaries, and the press of every previous round.",
+    "min_independent_sources": 2,
+    "claim_types": ["named_customer", "competitor", "founder", "funding", "why_now", "market", "key_hire", "reviews", "job_posts", "exec_team", "exec_departure", "headcount", "secondary_or_debt", "expansion", "employee_reviews"]
+  },
+  "claim_types": {
+    "revenue": {"check": "annex", "proof": "monthly P&L (36 months), audited accounts"},
+    "customers": {"check": "annex", "proof": "top 20 contracts, monthly P&L by customer"},
+    "retention": {"check": "annex", "proof": "cohort table by segment (24 months or more)"},
+    "nrr": {"check": "annex", "proof": "cohort table by segment: net revenue retention over 12 months"},
+    "churn": {"check": "annex", "proof": "cohort table, CRM win/loss with the reason per lost customer"},
+    "acquisition": {"check": "annex", "proof": "CRM export with channel and segment per deal, sales and marketing spend in the P&L"},
+    "pipeline": {"check": "annex", "proof": "CRM export with stage, probability, amount and segment per deal; financial model for the plan"},
+    "sales_cycle": {"check": "annex", "proof": "CRM export with first contact and signature dates"},
+    "founder_sales": {"check": "annex", "proof": "CRM export with the owner of each signed deal, sales roster for the start dates"},
+    "gross_margin": {"check": "annex", "proof": "audited accounts and monthly P&L: revenue and cost of revenue"},
+    "concentration": {"check": "annex", "proof": "top 20 contracts, P&L by customer"},
+    "burn_multiple": {"check": "annex", "proof": "monthly P&L: net burn and net new ARR, both twelve-month windows"},
+    "rule_of_40": {"check": "annex", "proof": "monthly P&L: revenue growth and operating margin over the last twelve months"},
+    "magic_number": {"check": "annex", "proof": "monthly P&L: net new ARR of the quarter and sales and marketing spend of the previous quarter"},
+    "quota_attainment": {"check": "annex", "proof": "sales roster: quota and attainment by rep and by quarter"},
+    "rep_ramp": {"check": "annex", "proof": "sales roster: start date and months to full quota per rep"},
+    "second_engine": {"check": "annex", "proof": "P&L by segment, CRM export: ARR, start date and economics of the segment, geography, product or channel opened after the series A"},
+    "breakeven": {"check": "annex", "proof": "three-year financial model: the month where net burn turns positive and the cumulative cash to get there"},
+    "audited_figure": {"check": "annex", "proof": "audited or reviewed annual accounts: the figure the deck attributes to them"},
+    "win_rate": {"check": "annex", "proof": "CRM win/loss: deals won and lost against each named competitor"},
+    "attrition": {"check": "annex", "proof": "org chart and headcount history: departures by function and whether regretted"},
+    "board": {"check": "annex", "proof": "board decks or minutes: members, affiliations, independent seats, meeting dates"},
+    "pricing": {"check": "annex", "proof": "top 20 contracts showing the price paid"},
+    "runway": {"check": "annex", "proof": "three-year financial model, monthly P&L"},
+    "cap_table": {"check": "annex", "proof": "cap table"},
+    "named_customer": {"check": "both", "proof": "top 20 contracts; customer website, LinkedIn, public review"},
+    "competitor": {"check": "web", "proof": "competitor websites, public reviews of the category"},
+    "founder": {"check": "web", "proof": "LinkedIn profile, public track record"},
+    "key_hire": {"check": "web", "proof": "LinkedIn profile of the hire with that role at the company"},
+    "exec_team": {"check": "both", "proof": "org chart with the executive team; LinkedIn profile of the executive with that role at the company"},
+    "exec_departure": {"check": "both", "proof": "org chart with end dates; LinkedIn profile of the executive showing the departure"},
+    "headcount": {"check": "both", "proof": "org chart and headcount history, P&L by function; LinkedIn headcount and its trend"},
+    "job_posts": {"check": "web", "proof": "careers page, LinkedIn job posts, by function and by country"},
+    "reviews": {"check": "web", "proof": "G2, Capterra or the sector's review site"},
+    "employee_reviews": {"check": "web", "proof": "Glassdoor or the local equivalent: rating, review count, recent reviews for and against"},
+    "funding": {"check": "both", "proof": "cap table, press of every previous round, registry"},
+    "secondary_or_debt": {"check": "both", "proof": "cap table with the secondary sale or the debt line and its terms; press"},
+    "expansion": {"check": "both", "proof": "entities and offices in the financial model and the org chart; company registries for announced subsidiaries, job posts by country"},
+    "why_now": {"check": "web", "proof": "regulation text, press, public data"},
+    "market": {"check": "web", "proof": "public data behind the bottom-up figures"},
+    "other": {"check": "none", "proof": ""}
+  },
+  "blocks": [
+    {
+      "id": "A",
+      "name": {"en": "Problem and customer", "fr": "Problème et client"},
+      "weight": 1,
+      "questions": [
+        {
+          "id": "A1",
+          "question": {"en": "Which segments are served, and do the last twenty customers match them?", "fr": "Quels segments sont servis, et les vingt derniers clients y correspondent-ils ?"},
+          "found_if": "A nameable profile (size, role, sector) per segment, and the last twenty signed contracts fit one of them.",
+          "note": "A customer that fits no segment is a question for the call.",
+          "requires_proof": true,
+          "claim_types": ["customers", "named_customer"]
+        },
+        {
+          "id": "A2",
+          "question": {"en": "Why do they buy, and why do they renew, per segment, in their own words?", "fr": "Pourquoi achètent-ils, et pourquoi renouvellent-ils, par segment, dans leurs mots ?"},
+          "found_if": "A purchase quote and a renewal quote per segment, or a documented use case with both.",
+          "note": "One segment quoted for all = partial."
+        },
+        {
+          "id": "A3",
+          "question": {"en": "What was tried and dropped since the series A?", "fr": "Qu'est-ce qui a été essayé et abandonné depuis la série A ?"},
+          "found_if": "A segment, geography, product or channel abandoned since the series A round, dated, with what triggered it.",
+          "note": "Nothing dropped in two years = partial at best."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": {"en": "Traction", "fr": "Traction"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "B1",
+          "question": {"en": "ARR today, and the monthly curve over 36 months?", "fr": "ARR aujourd'hui, et la courbe mensuelle sur 36 mois ?"},
+          "found_if": "An ARR and the monthly points over 36 months, matching the P&L and the audited accounts.",
+          "note": "A growth percentage without its starting point = absent.",
+          "requires_proof": true,
+          "claim_types": ["revenue", "audited_figure"]
+        },
+        {
+          "id": "B2",
+          "question": {"en": "How many paying customers, and the average contract value by segment?", "fr": "Combien de clients payants, et le contrat moyen par segment ?"},
+          "found_if": "A customer count and an ACV per segment, backed by the contracts or the P&L.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["customers", "pricing"]
+        },
+        {
+          "id": "B3",
+          "question": {"en": "Year-over-year growth for each of the last two years, with the starting points?", "fr": "Croissance sur un an pour chacune des deux dernières années, avec les points de départ ?"},
+          "found_if": "Three dated ARR points twelve months apart and the two ratios.",
+          "note": "Benchmark shown next to the figure, never in the score.",
+          "requires_proof": true,
+          "claim_types": ["revenue"]
+        },
+        {
+          "id": "B4",
+          "question": {"en": "Do the named customers exist, pay, and use the product?", "fr": "Les clients nommés existent-ils, paient-ils, et utilisent-ils le produit ?"},
+          "found_if": "Confirmed outside the deck: a contract in the annexes, and a website, LinkedIn page or public review.",
+          "note": "Still the central question. Cannot be found from the deck alone. Absent = red.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "claim_types": ["named_customer", "customers"]
+        },
+        {
+          "id": "B5",
+          "question": {"en": "How much of ARR do the top twenty customers make?", "fr": "Quelle part de l'ARR font les vingt premiers clients ?"},
+          "found_if": "A share of ARR for the top twenty, confirmed against the contracts or the P&L.",
+          "note": "A single customer above 20 % of ARR is a question for the call, not a verdict.",
+          "requires_proof": true,
+          "claim_types": ["concentration"]
+        },
+        {
+          "id": "B6",
+          "question": {"en": "New ARR by channel and by segment?", "fr": "Nouvel ARR par canal et par segment ?"},
+          "found_if": "Each channel and each segment with its share of new ARR over twelve months, from the CRM export.",
+          "note": "All from one channel = partial.",
+          "requires_proof": true,
+          "claim_types": ["acquisition"]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": {"en": "Efficient growth", "fr": "Croissance efficace"},
+      "weight": 3,
+      "questions": [
+        {
+          "id": "C1",
+          "question": {"en": "Gross margin, confirmed against the audited accounts?", "fr": "Marge brute, confirmée contre les comptes audités ?"},
+          "found_if": "A gross margin with what is included in cost of revenue, and the same figure in the audited accounts.",
+          "note": "A margin that excludes hosting, support or implementation = partial.",
+          "requires_proof": true,
+          "claim_types": ["gross_margin", "audited_figure"]
+        },
+        {
+          "id": "C2",
+          "question": {"en": "CAC payback by channel and by segment, and its trend over 24 months?", "fr": "Délai de récupération du CAC par canal et par segment, et sa tendance sur 24 mois ?"},
+          "found_if": "A payback in months per channel and per segment, with the method, and its curve over 24 months.",
+          "note": "A single blended figure = partial.",
+          "requires_proof": true,
+          "claim_types": ["acquisition"]
+        },
+        {
+          "id": "C3",
+          "question": {"en": "Burn multiple over the last twelve months, and over the twelve before?", "fr": "Burn multiple sur les douze derniers mois, et sur les douze précédents ?"},
+          "found_if": "Net burn divided by net new ARR for both windows, from the P&L, and the direction of the change.",
+          "note": "A multiple that rises with ARR is a red signal of the stage. Benchmark shown next to the figure (Sacks, Bessemer), never in the score.",
+          "requires_proof": true,
+          "claim_types": ["burn_multiple"]
+        },
+        {
+          "id": "C4",
+          "question": {"en": "Rule of 40?", "fr": "Rule of 40 ?"},
+          "found_if": "Revenue growth plus operating margin over the last twelve months, both from the P&L.",
+          "note": "Benchmark shown next to the figure, never in the score.",
+          "requires_proof": true,
+          "claim_types": ["rule_of_40"]
+        },
+        {
+          "id": "C5",
+          "question": {"en": "Sales efficiency: magic number?", "fr": "Efficacité commerciale : magic number ?"},
+          "found_if": "Net new ARR of the quarter over the previous quarter's sales and marketing spend, over the last four quarters.",
+          "note": "B2B only. Weight 0 in B2C.",
+          "requires_proof": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["magic_number"]
+        },
+        {
+          "id": "C6",
+          "question": {"en": "Weighted pipeline coverage of next year's plan, by segment?", "fr": "Couverture du plan de l'année suivante par le pipeline pondéré, par segment ?"},
+          "found_if": "A pipeline by stage with probabilities, its weighted total per segment, and the ratio to the plan of each segment.",
+          "note": "B2B only. Weight 0 in B2C. An unweighted pipeline = partial.",
+          "requires_proof": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["pipeline"]
+        },
+        {
+          "id": "C7",
+          "question": {"en": "The breakeven month in the model, and the cash needed to reach it?", "fr": "Le mois du point mort dans le modèle, et la trésorerie nécessaire pour l'atteindre ?"},
+          "found_if": "A month where net burn turns positive in the three-year model, with the cumulative cash to get there, or the explicit statement that none is planned.",
+          "note": "A model with no breakeven and no statement = absent.",
+          "requires_proof": true,
+          "claim_types": ["breakeven", "runway"]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": {"en": "Repeatability", "fr": "Répétabilité"},
+      "weight": 3,
+      "questions": [
+        {
+          "id": "D1",
+          "question": {"en": "What is the second engine, and what does it weigh?", "fr": "Quel est le second moteur, et que pèse-t-il ?"},
+          "found_if": "A segment, geography, product or channel opened after the series A, named, with its own ARR and its start date, in the P&L by segment.",
+          "note": "No engine opened since the series A = absent.",
+          "requires_proof": true,
+          "claim_types": ["second_engine", "revenue"]
+        },
+        {
+          "id": "D2",
+          "question": {"en": "Do its unit economics match the first engine's?", "fr": "Son économie unitaire rejoint-elle celle du premier moteur ?"},
+          "found_if": "CAC payback, gross margin and NRR of the second engine next to the same three of the first, from the same documents.",
+          "note": "A second engine without its own economics = partial at best. Shown side by side in the report.",
+          "requires_proof": true,
+          "claim_types": ["second_engine", "acquisition", "gross_margin", "nrr"]
+        },
+        {
+          "id": "D3",
+          "question": {"en": "What share of new ARR comes from engines opened after the series A?", "fr": "Quelle part du nouvel ARR vient des moteurs ouverts après la série A ?"},
+          "found_if": "The share of net new ARR over the last twelve months that comes from those engines, from the CRM.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["second_engine"]
+        },
+        {
+          "id": "D4",
+          "question": {"en": "Quota attainment?", "fr": "Atteinte des quotas ?"},
+          "found_if": "The share of reps at or above quota, by quarter, over twelve months.",
+          "note": "B2B only. Weight 0 in B2C. Absent = red. Every rep under quota is a question for the call.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["quota_attainment"]
+        },
+        {
+          "id": "D5",
+          "question": {"en": "Ramp time of a rep hired in the last twelve months?", "fr": "Temps de montée en charge d'un commercial recruté dans les douze derniers mois ?"},
+          "found_if": "The months from start date to full quota for the reps hired in the year, from the roster, and how many are ramped.",
+          "note": "B2B only. Weight 0 in B2C. No rep hired in the year = partial.",
+          "requires_proof": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["rep_ramp"]
+        },
+        {
+          "id": "D6",
+          "question": {"en": "What share of deals closed without a founder, and by reps hired in the year?", "fr": "Quelle part des ventes a été conclue sans fondateur, et par des commerciaux recrutés dans l'année ?"},
+          "found_if": "The share of signed deals whose owner in the CRM is not a founder, and the share owned by reps whose start date is within twelve months.",
+          "note": "B2B only. Weight 0 in B2C. Absent = red.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "weight_if_b2c": 0,
+          "claim_types": ["founder_sales", "rep_ramp"]
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": {"en": "Net retention", "fr": "Rétention nette"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "E1",
+          "question": {"en": "Net revenue retention over twelve months, by segment?", "fr": "Rétention nette du revenu (NRR) sur douze mois, par segment ?"},
+          "found_if": "An NRR per segment over a twelve-month window with the definition used, recomputable from the cohorts.",
+          "note": "Benchmark shown next to the figure, never in the score.",
+          "requires_proof": true,
+          "claim_types": ["nrr"]
+        },
+        {
+          "id": "E2",
+          "question": {"en": "Gross retention and logo churn, with the reasons?", "fr": "Rétention brute et churn logo, avec les raisons ?"},
+          "found_if": "A gross revenue retention and a logo churn figure, and a reason per lost customer.",
+          "note": "Absent = the deck hides churn. Red.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "claim_types": ["churn"]
+        },
+        {
+          "id": "E3",
+          "question": {"en": "Do the cohorts flatten at 24 months, in each segment?", "fr": "Les cohortes s'aplatissent-elles à 24 mois, dans chaque segment ?"},
+          "found_if": "Cohort curves of at least 24 months per segment, with the month where they flatten.",
+          "note": "A segment whose cohorts do not flatten is a question for the call.",
+          "requires_proof": true,
+          "claim_types": ["retention"]
+        },
+        {
+          "id": "E4",
+          "question": {"en": "Expansion: what share of new ARR comes from existing customers, and why?", "fr": "Expansion : quelle part du nouvel ARR vient des clients existants, et pourquoi ?"},
+          "found_if": "A share of net new ARR from expansion, with the trigger (seats, modules, price, second product).",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["nrr", "customers"]
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "name": {"en": "Market and competition", "fr": "Marché et concurrence"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "F1",
+          "question": {"en": "Market size computed bottom-up with the ACV by segment, and the share already taken?", "fr": "Taille du marché par le bas avec l'ACV par segment, et la part déjà prise ?"},
+          "found_if": "Possible customers per segment multiplied by the ACV signed in that segment, with visible assumptions, and the current ARR as a share of it.",
+          "note": "An analyst figure = absent.",
+          "claim_types": ["market"]
+        },
+        {
+          "id": "F2",
+          "question": {"en": "Who are the competitors, and what is the win rate against each?", "fr": "Qui sont les concurrents, et quel est le taux de gain contre chacun ?"},
+          "found_if": "Named competitors, and a win rate against each from the CRM win/loss.",
+          "note": "Web check: omitted competitors become a contradiction.",
+          "requires_proof": true,
+          "claim_types": ["competitor", "win_rate"]
+        },
+        {
+          "id": "F3",
+          "question": {"en": "Why now, and why still?", "fr": "Pourquoi maintenant, et pourquoi encore ?"},
+          "found_if": "A recent, named, verifiable change, why the window is still open two years after the series A, and what a well-funded entrant would need.",
+          "note": "",
+          "claim_types": ["why_now"]
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "name": {"en": "Leadership and organisation", "fr": "Direction et organisation"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "G1",
+          "question": {"en": "Does the executive team exist?", "fr": "L'équipe de direction existe-t-elle ?"},
+          "found_if": "CFO, CRO or VP Sales, CTO or VP Engineering, CPO: each named in the deck and found on LinkedIn with that role at the company.",
+          "note": "An executive on a slide who is not on LinkedIn is a contradiction. Absent = red.",
+          "requires_proof": true,
+          "red_flag_if_absent": true,
+          "claim_types": ["exec_team"]
+        },
+        {
+          "id": "G2",
+          "question": {"en": "Which executives left in the last 24 months, and why?", "fr": "Quels dirigeants sont partis dans les 24 derniers mois, et pourquoi ?"},
+          "found_if": "Each departure from the executive team with its date and a reason, matching the org chart and LinkedIn.",
+          "note": "A departure found on LinkedIn and not in the deck is a contradiction.",
+          "requires_proof": true,
+          "claim_types": ["exec_departure"]
+        },
+        {
+          "id": "G3",
+          "question": {"en": "Headcount by function over 24 months, and regretted attrition?", "fr": "Effectifs par fonction sur 24 mois, et attrition regrettée ?"},
+          "found_if": "Headcount per function month by month, matching the P&L by function, and the share of departures the company did not want.",
+          "note": "Headcount that does not match the P&L is a gap to probe.",
+          "requires_proof": true,
+          "claim_types": ["headcount", "attrition"]
+        },
+        {
+          "id": "G4",
+          "question": {"en": "The board: members, independents, cadence?", "fr": "Le board : membres, indépendants, cadence ?"},
+          "found_if": "The board members with their affiliation, the independent seats, and the meeting dates of the last four quarters.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["board"]
+        },
+        {
+          "id": "G5",
+          "question": {"en": "Do the open job posts match the hiring plan, by function and by country?", "fr": "Les offres d'emploi ouvertes correspondent-elles au plan de recrutement, par fonction et par pays ?"},
+          "found_if": "Public job posts that correspond to the hiring plan of the round, function by function and country by country.",
+          "note": "A country in the plan with no post: a question for the call.",
+          "requires_proof": true,
+          "claim_types": ["job_posts", "expansion"]
+        },
+        {
+          "id": "G6",
+          "question": {"en": "Who owns what?", "fr": "Qui possède quoi ?"},
+          "found_if": "Founders, investors, employees, option pool and what is left to grant, from the cap table.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["cap_table"]
+        }
+      ]
+    },
+    {
+      "id": "H",
+      "name": {"en": "Money and next step", "fr": "Argent et prochaine étape"},
+      "weight": 2,
+      "questions": [
+        {
+          "id": "H1",
+          "question": {"en": "How much is asked, and what for, by function and by engine?", "fr": "Combien demandé, à quoi ça sert, par fonction et par moteur ?"},
+          "found_if": "An amount and a breakdown by function and by engine (segment, geography, product, channel).",
+          "note": ""
+        },
+        {
+          "id": "H2",
+          "question": {"en": "What figures must be reached for the series C, or for profitability?", "fr": "Quels chiffres à atteindre pour la série C, ou pour la rentabilité ?"},
+          "found_if": "A measurable, dated goal: ARR, NRR, burn multiple, or the breakeven month.",
+          "note": "Absent = the money has no purpose. Red.",
+          "red_flag_if_absent": true
+        },
+        {
+          "id": "H3",
+          "question": {"en": "Runway and burn on the three-year model, with the breakeven if planned?", "fr": "Runway et burn sur le modèle à trois ans, avec le point mort s'il est prévu ?"},
+          "found_if": "Monthly burn, cash and months of runway, consistent with the financial model, and the breakeven month if there is one.",
+          "note": "",
+          "requires_proof": true,
+          "claim_types": ["runway", "breakeven"]
+        },
+        {
+          "id": "H4",
+          "question": {"en": "Previous rounds, investors, follow-on, and any secondary or venture debt?", "fr": "Tours précédents, investisseurs, réinvestissement, et toute cession secondaire ou dette ?"},
+          "found_if": "Amounts and investors for each round, in the cap table and the press, whether existing investors follow on, and any secondary sale or debt with its terms.",
+          "note": "A secondary or a debt line absent from the deck and present in the cap table is a contradiction.",
+          "requires_proof": true,
+          "claim_types": ["funding", "secondary_or_debt"]
+        }
+      ]
+    },
+    {
+      "id": "I",
+      "name": {"en": "References", "fr": "Références"},
+      "weight": 1,
+      "questions": [
+        {
+          "id": "I1",
+          "question": {"en": "Customers we can call, including one that left and one in the second engine?", "fr": "Des clients qu'on peut appeler, dont un qui est parti et un du second moteur ?"},
+          "found_if": "Names and a way to contact them, including at least one lost customer and one customer of the second engine.",
+          "note": ""
+        },
+        {
+          "id": "I2",
+          "question": {"en": "Executives, board members, and one executive who left, we can call?", "fr": "Des dirigeants, des membres du board, et un dirigeant parti, qu'on peut appeler ?"},
+          "found_if": "Same.",
+          "note": "Asked to prepare the call, not to judge the deck."
+        }
+      ]
+    }
+  ]
+}

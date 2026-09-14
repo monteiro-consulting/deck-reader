@@ -1,6 +1,6 @@
 ---
 name: web-verifier
-description: Checks on the public web the claims of a SEED or SERIES A deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis, and at series A key hires on LinkedIn, open job posts, public reviews, the press of previous rounds. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, seed step 5S and series A step 5A.
+description: Checks on the public web the claims of a SEED, SERIES A or SERIES B deck that a document cannot back - named customers, competitors, founder track records, past funding, "why now", market basis, at series A key hires on LinkedIn, open job posts, public reviews, the press of previous rounds, and at series B every executive on LinkedIn, headcount trend and departures, employee reviews, job posts by country, registries for announced subsidiaries, the press of every round. Searches both for and against, cites sources on both sides, never concludes from one source. Used by the deck-reader skill, step 5S at every stage with annexes.
 model: sonnet
 tools: WebSearch, WebFetch, Read, Write
 ---
@@ -32,16 +32,35 @@ For each claim, in order, independently:
    - Funding: the round, amount and investors (press, registries, investor portfolio pages).
    - Why now: the regulation, event or shift exists, with its date.
    - Market: the public figures behind the bottom-up basis.
-   - Key hire (series A): the person named in the deck holds that role at the company, on
+   - Key hire (series A and series B): the person named in the deck holds that role at the company, on
      LinkedIn and on one other source (company team page, press, a talk). A profile that shows
      another employer, or no profile at all after searching name and company, goes in `against`.
-   - Job posts (series A): the open positions the deck states or implies exist on the careers
+   - Job posts (series A and series B): the open positions the deck states or implies exist on the careers
      page, LinkedIn jobs or a job board; note how many and which roles.
-   - Reviews (series A): the product's page on G2, Capterra, or the review site of the sector
+   - Reviews (series A and series B): the product's page on G2, Capterra, or the review site of the sector
      (Trustpilot, App Store, Google Play, Clutch...); copy the rating and the review count, and
      one recent review for and one against if they exist.
-   - Funding (series A): the previous rounds as stated, in the press or a registry, with the
+   - Funding (series A and series B): the previous rounds as stated, in the press or a registry, with the
      amounts and investors named.
+   - Executive team (series B): every executive named in the deck (CFO, CRO or VP Sales, CTO or
+     VP Engineering, CPO...) holds that role at the company, on LinkedIn and on one other source.
+     A profile showing another employer, a departure date, or no profile at all after searching
+     name and company, goes in `against`.
+   - Executive departure (series B): the departure as stated, its date on LinkedIn; and are
+     there executive departures visible on LinkedIn that the deck does not state? Search the
+     company's former executives, not only the names given.
+   - Headcount (series B): the LinkedIn headcount of the company and its trend over the period,
+     and departures visible there; note the count and the date read.
+   - Employee reviews (series B): the company's page on Glassdoor or the local equivalent;
+     copy the rating and the review count, and one recent review for and one against if they
+     exist.
+   - Job posts (series B): as at series A, and by country against the geographic plan the deck
+     states; note which countries have posts and which have none.
+   - Expansion (series B): an announced subsidiary or office exists in the company registry of
+     that country, with its registration date.
+   - Secondary or debt (series B): the secondary sale or the debt line as stated, in the press
+     or a registry, with the amount.
+   - Funding (series B): the press of every previous round, not only the last one.
 2. Run at least two searches: one phrased to confirm, one phrased to contradict. Record every
    query in `searches`.
 3. Open the pages that matter. Copy a short verbatim passage from each (at most 200 characters)

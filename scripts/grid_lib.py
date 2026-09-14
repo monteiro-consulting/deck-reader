@@ -3,23 +3,24 @@
 
 Standard library only.
 
-    load_grid(path_or_stage)      -> dict. "preseed" / "seed" / "series_a" (and the spellings in
-                                     STAGES) resolve to scripts/grids/<stage>.json.
-    stage_key(stage)              -> "preseed" | "seed" | "series_a", from any accepted spelling
-                                     or from a grid's "stage" field.
+    load_grid(path_or_stage)      -> dict. "preseed" / "seed" / "series_a" / "series_b" (and the
+                                     spellings in STAGES) resolve to scripts/grids/<stage>.json.
+    stage_key(stage)              -> "preseed" | "seed" | "series_a" | "series_b", from any
+                                     accepted spelling or from a grid's "stage" field.
     model_key(profile)            -> the model whose block applies. The profile's model_type when
                                      a file scripts/grids/models/<model>.json exists, else "saas".
     load_model(model)             -> the model block (dict) or None.
     effective_grid(grid, profile) -> a copy of the stage grid with the model block applied, in
-                                     this order: remove, reweight, add. Every script that walks
-                                     the questions must use this, so that a marketplace deck is
-                                     scored on the marketplace questions too.
+                                     this order: remove, reweight, add, documents. Every script
+                                     that walks the questions, or the required documents, must
+                                     use this, so that a marketplace deck is scored on the
+                                     marketplace questions and gated on the marketplace documents.
     load_benchmarks(model, stage) -> the benchmarks to display for that model and stage: the
                                      model's own list, plus the stage-generic entries of saas.json
                                      (marked all_models) when the model is not saas. Never scored.
     all_questions(grid)           -> [(block, question), ...] in grid order.
 
-A model block (scripts/grids/models/<model>.json) has, per stage, three verbs:
+A model block (scripts/grids/models/<model>.json) has, per stage, four verbs, applied in order:
     remove    ["C4", ...]                       question ids of the stage grid taken out
     reweight  {"blocks": {"B": 0}, "questions": {"B2": 1}}
                                                 new weight for a block, or for one question
@@ -27,7 +28,17 @@ A model block (scripts/grids/models/<model>.json) has, per stage, three verbs:
                {"block": {"id": "Q", "name": {...}, "weight": 2}, "questions": [...]}]
                                                 questions appended to an existing block (they
                                                 take its weight), or to a block the model brings
+    documents {"remove": ["crm_pipeline"], "add": [{"id": ..., "name": {...},
+               "requirement": {...}, "min_months": 12, "min_count": null}]}
+                                                required documents of the stage's first gate
+                                                (grid["annex_gate"]["required_documents"]) taken
+                                                out by id, or appended with the same shape as the
+                                                grid entries. Only for a stage whose grid carries
+                                                a document list (series A, series B); an error
+                                                otherwise.
 The stage grid is never edited on disk; the pre-seed grid has no model section and is untouched.
+The document list is the same for every deck of one stage and one model: the model block
+adjusts it, the deck never does.
 """
 import copy
 import json
@@ -44,6 +55,8 @@ STAGES = {
     "seed": "seed",
     "series a": "series_a", "series-a": "series_a", "series_a": "series_a", "seriesa": "series_a",
     "série a": "series_a", "serie a": "series_a", "série-a": "series_a", "serie-a": "series_a",
+    "series b": "series_b", "series-b": "series_b", "series_b": "series_b", "seriesb": "series_b",
+    "série b": "series_b", "serie b": "series_b", "série-b": "series_b", "serie-b": "series_b",
 }
 
 
@@ -137,8 +150,43 @@ def _question_index(grid):
     return {q["id"]: (b, q) for b in grid["blocks"] for q in b["questions"]}
 
 
+def _required_documents(grid):
+    """The document list of the first gate, or None when the stage grid has none."""
+    gate = grid.get("annex_gate")
+    if not isinstance(gate, dict) or "required_documents" not in gate:
+        return None
+    return gate["required_documents"]
+
+
+def _apply_documents(g, ops, model):
+    """The documents verb: remove required documents by id, add entries with the grid shape."""
+    docs = _required_documents(g)
+    removed, added = [], []
+    if not ops:
+        return {"removed": removed, "added": added}
+    if docs is None:
+        raise GridError(f"model {model!r}: a documents verb for stage {g['stage']!r}, whose grid has no required_documents")
+    for did in ops.get("remove") or []:
+        if did not in {d["id"] for d in docs}:
+            raise GridError(f"model {model!r}: cannot remove document {did!r}, not in the {g['stage']} list")
+        docs[:] = [d for d in docs if d["id"] != did]
+        removed.append(did)
+    for entry in ops.get("add") or []:
+        for key in ("id", "name", "requirement"):
+            if key not in entry:
+                raise GridError(f"model {model!r}: added document without {key!r}")
+        if entry["id"] in {d["id"] for d in docs}:
+            raise GridError(f"model {model!r}: document id {entry['id']!r} already exists in the {g['stage']} list")
+        doc = {"id": entry["id"], "name": entry["name"], "requirement": entry["requirement"], "min_months": entry.get("min_months")}
+        if entry.get("min_count") is not None:
+            doc["min_count"] = entry["min_count"]
+        docs.append(copy.deepcopy(doc))
+        added.append(entry["id"])
+    return {"removed": removed, "added": added}
+
+
 def apply_model_block(grid, ops, model=""):
-    """Apply one stage section of a model block to a copy of the grid: remove, reweight, add."""
+    """Apply one stage section of a model block to a copy of the grid: remove, reweight, add, documents."""
     g = copy.deepcopy(grid)
     ops = ops or {}
     removed, reweighted, added = [], {"blocks": {}, "questions": {}}, []
@@ -187,7 +235,10 @@ def apply_model_block(grid, ops, model=""):
             existing.add(q["id"])
             added.append(q["id"])
 
-    g["model_block"] = {"model": model, "removed": removed, "reweighted": reweighted, "added": added}
+    # 4. documents (the first gate's list, only where the stage grid has one)
+    documents = _apply_documents(g, ops.get("documents"), model)
+
+    g["model_block"] = {"model": model, "removed": removed, "reweighted": reweighted, "added": added, "documents": documents}
     return g
 
 
@@ -201,7 +252,8 @@ def effective_grid(grid, profile=None):
     ops = (block.get("stages") or {}).get(skey) or {}
     g = apply_model_block(grid, ops, model)
     mb = g["model_block"]
-    changed = bool(mb["removed"] or mb["added"] or mb["reweighted"]["blocks"] or mb["reweighted"]["questions"])
+    changed = bool(mb["removed"] or mb["added"] or mb["reweighted"]["blocks"] or mb["reweighted"]["questions"]
+                   or mb["documents"]["removed"] or mb["documents"]["added"])
     g["applied_model"] = model
     g["applied_model_questions"] = model if changed else ""
     return g
@@ -209,3 +261,10 @@ def effective_grid(grid, profile=None):
 
 def all_questions(grid):
     return [(b, q) for b in grid["blocks"] for q in b["questions"]]
+
+
+def required_documents(grid):
+    """The required documents of a grid's first gate, [] when the stage has none.
+
+    Pass an effective grid (effective_grid) to get the list of the stage and the model."""
+    return list(_required_documents(grid) or [])

@@ -1,6 +1,6 @@
 {
   "model": "fintech",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "rule": "Displayed next to the deck figure with source and date, never in the score. Empty value = no dated source found.",
   "stages": {
     "seed": [
@@ -12,6 +12,11 @@
       {"id": "fin-a-compliance-fines", "metric": {"en": "Compliance fines", "fr": "Amendes de conformité"}, "question_ids": ["Q2"], "claim_types": ["runway"], "value": "60 % of fintech companies paid at least 250,000 USD in compliance fines in the past year, mostly for insufficient transaction monitoring and customer due diligence", "source": "Qubit Capital, Fintech Due Diligence Checklist", "url": "https://qubit.capital/blog/fintech-due-diligence-checklist", "date": "2025-12-11", "note": ""},
       {"id": "fin-a-compliance-cost", "metric": {"en": "Compliance cost as a share of expenses", "fr": "Coût de conformité en part des charges"}, "question_ids": ["Q2"], "claim_types": ["runway", "gross_margin"], "value": "", "source": "", "url": "", "date": "", "note": "No dated series A source with a share of expenses found."},
       {"id": "fin-a-loss-rate", "metric": {"en": "Credit or fraud loss rate", "fr": "Taux de perte de crédit ou de fraude"}, "question_ids": ["Q3"], "claim_types": ["churn"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a loss rate benchmark found."}
+    ],
+    "series_b": [
+      {"id": "fin-b-compliance-fines", "metric": {"en": "Compliance fines", "fr": "Amendes de conformité"}, "question_ids": ["Q2"], "claim_types": ["runway"], "value": "60 % of fintech companies paid at least 250,000 USD in compliance fines in the past year, mostly for insufficient transaction monitoring and customer due diligence", "source": "Qubit Capital, Fintech Due Diligence Checklist", "url": "https://qubit.capital/blog/fintech-due-diligence-checklist", "date": "2025-12-11", "note": "Not stage-specific."},
+      {"id": "fin-b-compliance-cost", "metric": {"en": "Compliance cost as a share of expenses", "fr": "Coût de conformité en part des charges"}, "question_ids": ["Q2"], "claim_types": ["runway", "gross_margin"], "value": "", "source": "", "url": "", "date": "", "note": "No dated series B source with a share of expenses found."},
+      {"id": "fin-b-loss-rate", "metric": {"en": "Credit or fraud loss rate, losses on the book", "fr": "Taux de perte de crédit ou de fraude, pertes sur le livre"}, "question_ids": ["Q3", "Q4"], "claim_types": ["churn"], "value": "", "source": "", "url": "", "date": "", "note": "No dated source with a loss rate benchmark found."}
     ]
   }
 }

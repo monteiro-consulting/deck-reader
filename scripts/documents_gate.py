@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
-"""The stop decisions of the series A reading that a model must never take. Standard library only.
+"""The stop decisions a model must never take, for every stage whose grid carries a required
+document list (series A and series B). Standard library only. --grid takes series_a or series_b.
 
 Usage:
-    series_a_gate.py required  --grid series_a --out required.json
-    series_a_gate.py documents --grid series_a --annexes annexes.json --classification annex-types.json
-                               --out gate.json [--invalid invalid.json]
-    series_a_gate.py contradictions --grid series_a --claims claims.final.json --review review.json
-                                    --out gate.json --out-claims claims.reviewed.json
+    documents_gate.py required  --grid series_a [--profile profile.json] --out required.json
+    documents_gate.py documents --grid series_a [--profile profile.json] --annexes annexes.json
+                                --classification annex-types.json --out gate.json [--invalid invalid.json]
+    documents_gate.py contradictions --grid series_a --claims claims.final.json --review review.json
+                                     --out gate.json --out-claims claims.reviewed.json
 
-required   writes the fixed list (id, name, requirement, min_months, min_count) for the
+required   writes the document list (id, name, requirement, min_months, min_count) for the
            annex-classifier agent, which sees the list and never the gate rule.
 
-documents  (grid["annex_gate"]["required_documents"])
-    The list is fixed. The annex-classifier agent says, for each readable annex, which required
-    document it is, with a verbatim quote from the annex and the months it covers. This script
-    checks the quote against the annex text (a classification with a quote that is not there is
-    ignored), then walks the required list:
+documents  (grid["annex_gate"]["required_documents"], model block applied)
+    The list is the one of the stage and of the business model: the stage grid carries the
+    base list, the model block adjusts it with its documents verb (grid_lib.effective_grid), the
+    deck never does. Without --profile the default model (saas) applies, as everywhere else.
+    The annex-classifier agent says, for each readable annex, which required document it is,
+    with a verbatim quote from the annex and the months it covers. This script checks the quote
+    against the annex text (a classification with a quote that is not there is ignored), then
+    walks the required list:
         stop_missing_documents   at least one document is absent, or covers fewer months than
                                  min_months, or fewer items than min_count. The gate lists them
                                  for the founder email, document by document.
@@ -32,7 +36,7 @@ import json
 import sys
 
 from claims_lib import load_json, save_json
-from grid_lib import load_grid
+from grid_lib import effective_grid, load_grid, required_documents
 from seed_gate import contradictions_gate
 from verify_quotes import quote_on_page
 
@@ -42,7 +46,8 @@ def _annex_text(annexes_doc):
 
 
 def documents_gate(annexes_doc, classification_doc, grid):
-    required = list((grid.get("annex_gate") or {}).get("required_documents") or [])
+    """Walk the required documents of `grid` (pass the effective grid for the model's list)."""
+    required = required_documents(grid)
     texts = _annex_text(annexes_doc)
     invalid = []
     by_type = {}
@@ -84,6 +89,7 @@ def documents_gate(annexes_doc, classification_doc, grid):
         "gate": "documents",
         "decision": "stop_missing_documents" if missing else "continue",
         "readable_annexes": len(texts),
+        "model": grid.get("applied_model") or grid.get("model_block", {}).get("model") or "",
         "required": [d["id"] for d in required],
         "present": present,
         "to_request": missing,
@@ -94,6 +100,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("gate", choices=["required", "documents", "contradictions"])
     ap.add_argument("--grid", required=True)
+    ap.add_argument("--profile", default=None, help="profile.json; picks the model block whose documents verb adjusts the list (default: saas)")
     ap.add_argument("--annexes", default=None)
     ap.add_argument("--classification", default=None)
     ap.add_argument("--claims", default=None)
@@ -102,15 +109,16 @@ def main(argv=None):
     ap.add_argument("--out-claims", default=None)
     ap.add_argument("--invalid", default=None)
     args = ap.parse_args(argv)
-    grid = load_grid(args.grid)
+    profile = load_json(args.profile) if args.profile else {}
+    grid = effective_grid(load_grid(args.grid), profile)
     if args.gate == "required":
-        required = list((grid.get("annex_gate") or {}).get("required_documents") or [])
-        save_json(args.out, {"stage": grid["stage"], "required": required})
-        print(json.dumps({"out": args.out, "required": [d["id"] for d in required]}))
+        required = required_documents(grid)
+        save_json(args.out, {"stage": grid["stage"], "model": grid["applied_model"], "required": required})
+        print(json.dumps({"out": args.out, "model": grid["applied_model"], "required": [d["id"] for d in required]}))
         return 0
     if args.gate == "documents":
         if not args.annexes:
-            print("series_a_gate.py: --annexes is required for the documents gate", file=sys.stderr)
+            print("documents_gate.py: --annexes is required for the documents gate", file=sys.stderr)
             return 2
         classification = load_json(args.classification) if args.classification else {"annexes": []}
         result, invalid = documents_gate(load_json(args.annexes), classification, grid)
@@ -119,7 +127,7 @@ def main(argv=None):
         result["invalid_classifications"] = len(invalid)
     else:
         if not args.claims:
-            print("series_a_gate.py: --claims is required for the contradictions gate", file=sys.stderr)
+            print("documents_gate.py: --claims is required for the contradictions gate", file=sys.stderr)
             return 2
         claims_doc = load_json(args.claims)
         review_doc = load_json(args.review) if args.review else {"reviews": []}

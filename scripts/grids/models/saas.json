@@ -1,6 +1,6 @@
 {
   "model": "saas",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "SaaS", "fr": "SaaS"},
   "principle": {
     "en": "The default model. The stage grids are written for it: no question is added, removed or reweighted. Only the benchmarks apply (scripts/grids/benchmarks/saas.json), displayed next to the deck figures, never in the score.",
@@ -13,6 +13,7 @@
   ],
   "stages": {
     "seed": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
-    "series_a": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []}
+    "series_a": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []},
+    "series_b": {"remove": [], "reweight": {"blocks": {}, "questions": {}}, "add": []}
   }
 }

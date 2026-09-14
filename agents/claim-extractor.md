@@ -1,6 +1,6 @@
 ---
 name: claim-extractor
-description: Lists every verifiable statement a SEED or SERIES A deck makes - figures, named customers, competitors, founder track records, past funding, "why now", and at series A NRR, pipeline, sales cycle, gross margin, concentration, burn multiple, founder-led sales, key hires, job posts, reviews - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3S and series A step 3A.
+description: Lists every verifiable statement a SEED, SERIES A or SERIES B deck makes - figures, named customers, competitors, founder track records, past funding, "why now", at series A NRR, pipeline, sales cycle, gross margin, concentration, burn multiple, founder-led sales, key hires, job posts, reviews, and at series B Rule of 40, magic number, quota attainment, rep ramp, second engine, executive team and departures, headcount, board, breakeven, audited figures, win rate, secondary or debt, expansion - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3S and series A and series B step 4A.
 model: sonnet
 tools: Read, Write
 ---
@@ -31,7 +31,13 @@ A statement that a document or a public source could confirm or contradict:
 - at series A (the types file says which types exist): net revenue retention, a pipeline figure
   or its coverage of the plan, a sales cycle length, a gross margin, the share of ARR of the
   largest customers, a burn multiple, the share of deals closed by the sales team rather than
-  the founders, a key hire named with a role, open positions, a rating or review count.
+  the founders, a key hire named with a role, open positions, a rating or review count;
+- at series B (again, the types file says which types exist): a Rule of 40, a magic number, a
+  quota attainment, a rep ramp time, a second engine (a segment, geography, product or channel
+  opened after the series A, with its ARR, start date or economics), an executive named with a
+  role, an executive departure, a headcount or attrition figure, the board's composition or
+  cadence, a breakeven month, a figure attributed to audited accounts, a win rate against a
+  competitor, a secondary sale or a debt line, a subsidiary or office opened.
 
 Not a claim: an intention ("we will hire"), an opinion ("the market is huge"), a product
 description without a checkable fact, the ask itself ("we are raising 1.5M").

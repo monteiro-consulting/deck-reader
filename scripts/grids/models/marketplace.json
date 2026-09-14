@@ -1,6 +1,6 @@
 {
   "model": "marketplace",
-  "version": "2026-09-13",
+  "version": "2026-09-14",
   "name": {"en": "Marketplace", "fr": "Marketplace"},
   "principle": {
     "en": "The company matches supply and demand and takes a share of transactions. Revenue is the take rate on GMV, and both sides must come back. The questions follow a16z's 13 marketplace metrics and are appended to the traction block with its weight.",
@@ -104,7 +104,70 @@
             }
           ]
         }
-      ]
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "gmv_24m",
+            "name": {"en": "Monthly GMV by side over 24 months", "fr": "GMV mensuel par côté sur 24 mois"},
+            "requirement": {"en": "GMV, take rate, and active supply and demand counts, month by month.", "fr": "GMV, take rate et nombre d'acteurs actifs côté offre et côté demande, mois par mois."},
+            "min_months": 24
+          }
+        ]
+      }
+    },
+    "series_b": {
+      "remove": [],
+      "reweight": {"blocks": {}, "questions": {}},
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "M1",
+              "question": {"en": "Gross merchandise value and take rate over 36 months, and the net revenue that follows?", "fr": "Volume d'affaires (GMV) et take rate sur 36 mois, et le revenu net qui en découle ?"},
+              "found_if": "Monthly GMV and take rate over 36 months, and the net revenue that follows from them, matching the P&L and the audited accounts.",
+              "note": "From a16z's marketplace metrics. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["revenue", "audited_figure"]
+            },
+            {
+              "id": "M2",
+              "question": {"en": "Do both sides come back, market by market?", "fr": "Les deux côtés reviennent-ils, marché par marché ?"},
+              "found_if": "Retention cohorts for supply and for demand, separately, over 24 months or more, for the oldest market and the newest.",
+              "note": "One side retained and not the other = partial.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "M3",
+              "question": {"en": "Concentration of the top twenty sellers and the top twenty buyers?", "fr": "Concentration des vingt premiers vendeurs et des vingt premiers acheteurs ?"},
+              "found_if": "Share of GMV made by the top twenty sellers and by the top twenty buyers, separately, confirmed against the GMV export.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["concentration"]
+            },
+            {
+              "id": "M4",
+              "question": {"en": "GMV retention by cohort and by side?", "fr": "Rétention du GMV par cohorte et par côté ?"},
+              "found_if": "The share of each cohort's spend retained month after month, supply and demand separately, over 24 months or more.",
+              "note": "From a16z's GMV retention note. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["nrr", "retention"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "gmv_36m",
+            "name": {"en": "Monthly GMV by side over 36 months", "fr": "GMV mensuel par côté sur 36 mois"},
+            "requirement": {"en": "GMV, take rate, and active supply and demand counts, month by month.", "fr": "GMV, take rate et nombre d'acteurs actifs côté offre et côté demande, mois par mois."},
+            "min_months": 36
+          }
+        ]
+      }
     }
   }
 }
