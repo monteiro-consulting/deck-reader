@@ -13,7 +13,7 @@ Usage (reading stopped):
               --abort-kind stage|no_annexes|insufficient_annexes|contradiction --abort-reason "..."
               [--claims ... --annexes ... --gate ... --email ...]
 
---grid is a stage name (preseed, seed, series_a, series_b) or a path. --lang selects the labels. Shipped: en, fr.
+--grid is a stage name (preseed, seed, series_a, series_b, series_c) or a path. --lang selects the labels. Shipped: en, fr.
 Any other code falls back to English labels; the writer's prose (reading.md) is in whatever
 language the orchestrator requested. Grid question wording follows the same rule.
 """
@@ -24,9 +24,10 @@ import json
 import os
 import sys
 
+from claims_lib import to_number
 from grid_lib import GridError, effective_grid, load_benchmarks, load_grid, stage_key
 
-STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b")
+STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b", "series-c")
 
 # How a grid is named in the disclaimer of a stage that carries a required document list. Any
 # stage whose grid has annex_gate.required_documents uses disclaimer_documents with this name;
@@ -34,6 +35,7 @@ STAGES_WITH_ANNEXES = ("seed", "series-a", "series-b")
 GRID_NAMES = {
     "series-a": {"en": "series A grid", "fr": "grille série A"},
     "series-b": {"en": "series B grid", "fr": "grille série B"},
+    "series-c": {"en": "series C grid", "fr": "grille série C"},
 }
 
 LABELS = {
@@ -127,6 +129,16 @@ LABELS = {
         "benchmark_none": "no dated source",
         "information_only_block": "for information, weight 0",
         "page_abbrev": "p.",
+        "plan_vs_actual": "Plan against actual, quarter by quarter",
+        "plan_vs_actual_note": "The plan read in the board pack of each quarter and the actual read in the P&L, from the claims of the deck matched in the documents. The gap is computed by code, (actual - plan) / |plan|. Empty cells stay empty. Displayed, never scored.",
+        "plan_vs_actual_none": "No plan against actual figure was stated in the deck and matched in the documents.",
+        "quarter": "Quarter",
+        "metric": "Metric",
+        "plan": "Plan (board pack)",
+        "actual": "Actual (P&L)",
+        "gap_pct": "Gap",
+        "pva_summary": "{metric}: average gap {avg} over {n} quarter(s)",
+        "pva_missed": ", {k} quarter(s) missed",
     },
     "fr": {
         "title": "Lecture de complétude du deck",
@@ -218,6 +230,16 @@ LABELS = {
         "benchmark_none": "pas de source datée",
         "information_only_block": "pour information, poids 0",
         "page_abbrev": "p.",
+        "plan_vs_actual": "Plan contre réalisé, trimestre par trimestre",
+        "plan_vs_actual_note": "Le plan lu dans le board pack de chaque trimestre et le réalisé lu dans le P&L, à partir des affirmations du deck retrouvées dans les documents. L'écart est calculé par le code, (réalisé - plan) / |plan|. Les cases vides restent vides. Affiché, jamais noté.",
+        "plan_vs_actual_none": "Aucun chiffre de plan contre réalisé n'est avancé par le deck et retrouvé dans les documents.",
+        "quarter": "Trimestre",
+        "metric": "Indicateur",
+        "plan": "Plan (board pack)",
+        "actual": "Réalisé (P&L)",
+        "gap_pct": "Écart",
+        "pva_summary": "{metric} : écart moyen {avg} sur {n} trimestre(s)",
+        "pva_missed": ", {k} trimestre(s) manqué(s)",
     },
 }
 
@@ -431,6 +453,64 @@ def benchmarks_section(lab, benchmarks, lang):
     return lines
 
 
+def _gap_percent(plan, actual):
+    if plan is None or actual is None or plan == 0:
+        return None
+    return 100.0 * (actual - plan) / abs(plan)
+
+
+def plan_vs_actual_section(lab, grid, claims_doc, lang):
+    """The plan vs actual table of a grid that asks for one (grid["report"]["plan_vs_actual"]).
+
+    Layout only: the plan and the actual come from the matched claims (plan_value from the board
+    pack, actual_value from the P&L), the gap is computed here, nothing is scored."""
+    spec = (grid.get("report") or {}).get("plan_vs_actual")
+    if not spec:
+        return []
+    metrics = spec.get("metrics") or []
+    order = {m["id"]: i for i, m in enumerate(metrics)}
+    by_key = {}
+    for c in (claims_doc or {}).get("claims") or []:
+        if c.get("type") != spec.get("claim_type", "plan_vs_actual") or c.get("metric") not in order or not c.get("period"):
+            continue
+        key = (str(c["period"]), c["metric"])
+        complete = c.get("plan_value") is not None and c.get("actual_value") is not None
+        if key not in by_key or (complete and by_key[key].get("plan_value") is None):
+            by_key[key] = c
+    lines = [f"## {lab['plan_vs_actual']}", "", lab["plan_vs_actual_note"], ""]
+    if not by_key:
+        return lines + [lab["plan_vs_actual_none"], ""]
+    periods = sorted({p for p, _ in by_key})[-int(spec.get("quarters") or 8):]
+    lines += [f"| {lab['quarter']} | {lab['metric']} | {lab['plan']} | {lab['actual']} | {lab['gap_pct']} | # |", "|---|---|---:|---:|---:|---|"]
+    stats = {m["id"]: {"gaps": [], "missed": 0} for m in metrics}
+    for p in periods:
+        for m in metrics:
+            c = by_key.get((p, m["id"]))
+            if c is None:
+                continue
+            plan, actual = to_number(c.get("plan_value")), to_number(c.get("actual_value"))
+            gap = _gap_percent(plan, actual)
+            if gap is not None:
+                stats[m["id"]]["gaps"].append(gap)
+                if (m.get("missed_if") == "below" and actual < plan) or (m.get("missed_if") == "above" and actual > plan):
+                    stats[m["id"]]["missed"] += 1
+            plan_s = fmt_num(plan) if plan is not None else "—"
+            actual_s = fmt_num(actual) if actual is not None else "—"
+            gap_s = f"{gap:+.1f} %" if gap is not None else "—"
+            lines.append(f"| {p} | {md_cell(pick(m.get('name'), lang))} | {plan_s} | {actual_s} | {gap_s} | {c.get('id')} |")
+    lines.append("")
+    for m in metrics:
+        gaps = stats[m["id"]]["gaps"]
+        if not gaps:
+            continue
+        line = "- " + lab["pva_summary"].format(metric=pick(m.get("name"), lang), avg=f"{sum(gaps) / len(gaps):+.1f} %", n=len(gaps))
+        if m.get("missed_if"):
+            line += lab["pva_missed"].format(k=stats[m["id"]]["missed"])
+        lines.append(line)
+    lines.append("")
+    return lines
+
+
 def contradictions_section(lab, claims_doc):
     claims = [c for c in ((claims_doc or {}).get("claims") or []) if c.get("status") in ("to_probe", "blatant")]
     lines = [f"## {lab['contradictions']}", ""]
@@ -569,6 +649,7 @@ def full_report(lab, deck, grid, profile, answers, score, reading, pages_meta, d
         lines += contradictions_section(lab, claims_doc)
         lines += to_request_section(lab, gate, email_text, lang)
         lines += claims_section(lab, claims_doc, benchmarks)
+        lines += plan_vs_actual_section(lab, grid, claims_doc, lang)
     lines += questions_section(lab, grid, score, answers, lang, benchmarks)
     lines += benchmarks_section(lab, benchmarks, lang)
     return "\n".join(lines)

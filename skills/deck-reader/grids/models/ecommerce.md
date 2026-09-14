@@ -11,6 +11,7 @@ metrics and Fairview's D2C unit economics; the generic CAC and the sales cycle a
 | Seed | C4 (sales cycle) | none | O1, O2 in block C; O3 in block B | none (no list at seed) |
 | Series A | C2 (generic CAC), C3 (sales cycle) | none | O1, O2 in block C; O3 in block D | remove crm_pipeline, top10_contracts; add orders_export_24m |
 | Series B | C5 (magic number), C6 (pipeline), D4, D5, D6 (sales team) | none | O1, O2 in block C; O3 in block E | remove crm_pipeline, sales_roster, top20_contracts; add orders_export_36m |
+| Series C | C5 (magic number), D3 (win rate trend), D6 (deals without a founder) | none | O1, O2 in block C; O3 in block E | remove crm_pipeline, sales_roster, top20_contracts; add orders_export_48m |
 
 ## Seed
 
@@ -81,6 +82,36 @@ Removed from the base list: `crm_pipeline` (CRM export with weighted pipeline an
 
 The document list of the first gate is the one of the stage grid (`scripts/grids/series_b.json`) with the changes above; the deck never adjusts it.
 
+## Series C
+
+Added to block C (weight 3):
+
+| # | Question | Found if | Note |
+|---|---|---|---|
+| O1 | Contribution margin per order, after shipping and returns, over 48 months? | Net sales per order minus goods, shipping, payment fees, returns and refunds, month by month over 48 months, matching the P&L and three years of audited accounts | *proof*. A gross margin that stops at the goods = partial |
+| O2 | Customer acquisition cost by channel and by country, paid and blended, and its payback? | A CAC per channel and per country, paid and blended, the spend and the orders behind it, and the months of contribution margin needed to recover it, from the orders export | *proof*. A blended CAC alone = partial |
+
+Added to block E (weight 2):
+
+| # | Question | Found if | Note |
+|---|---|---|---|
+| O3 | What share of customers order again within 60 days, by cohort vintage? | A 60-day repeat purchase rate by monthly acquisition cohort over 36 months or more, with the cohorts of each acquisition year side by side | *proof*. Older cohorts below newer ones are a question for the call. Benchmark shown next to the figure |
+
+At series C the block removes the magic number (C5), the win rate trend (D3) and the deals
+signed without a founder (D6): they are read in the CRM export and the sales roster, which the
+e-commerce list does not ask for. Pricing power (D2) stays: the billing export is on the list,
+and the discounts of the orders export answer it.
+
+## Series C: documents (first gate)
+
+Removed from the base list: `crm_pipeline` (CRM export with weighted pipeline, owner, and win/loss with competitor), `sales_roster` (Sales roster with quota attainment over 24 months), `top20_contracts` (Signed contracts of the top 20 customers).
+
+| Id | Document | Requirement | Minimum |
+|---|---|---|---|
+| orders_export_48m | Orders export over 48 months | Every order with revenue, cost of goods, shipping, returns, discounts, and marketing spend by channel and by country, month by month. | 48 months |
+
+The document list of the first gate is the one of the stage grid (`scripts/grids/series_c.json`) with the changes above; the deck never adjusts it.
+
 ## Benchmarks (displayed, never scored)
 
 Contribution margin median 22 % in 2025, down from 35 % in 2021; 60-day repeat rate strong
@@ -92,6 +123,9 @@ above 50 % good, LTV/CAC above 3x (Initialized, 2021-06-29). CAC payback in mont
 source confirmed on the page, left empty. Series B: the Fairview (2026) and Daasity (2022-03-30)
 figures are shown again, none being stage-specific; revenue, growth and CAC payback at series B
 have no dated source and stay empty.
+
+Series C: the Fairview (2026) and Daasity (2022-03-30) figures are shown again, none being
+stage-specific; revenue, growth and CAC payback at series C have no dated source and stay empty.
 
 ## Sources
 

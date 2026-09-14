@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The stop decisions a model must never take, for every stage whose grid carries a required
-document list (series A and series B). Standard library only. --grid takes series_a or series_b.
+document list (series A, series B and series C). Standard library only. --grid takes series_a,
+series_b or series_c.
 
 Usage:
     documents_gate.py required  --grid series_a [--profile profile.json] --out required.json

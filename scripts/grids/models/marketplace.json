@@ -168,6 +168,62 @@
           }
         ]
       }
+    },
+    "series_c": {
+      "remove": [],
+      "reweight": {
+        "blocks": {},
+        "questions": {}
+      },
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "M1",
+              "question": {"en": "Gross merchandise value and take rate over 48 months, and the net revenue that follows?", "fr": "Volume d'affaires (GMV) et take rate sur 48 mois, et le revenu net qui en découle ?"},
+              "found_if": "Monthly GMV and take rate over 48 months, and the net revenue that follows from them, matching the P&L and three years of audited accounts.",
+              "note": "From a16z's marketplace metrics. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["revenue", "audited_figure"]
+            },
+            {
+              "id": "M2",
+              "question": {"en": "Do both sides come back, market by market and cohort vintage by cohort vintage?", "fr": "Les deux côtés reviennent-ils, marché par marché et millésime par millésime ?"},
+              "found_if": "Retention cohorts for supply and for demand, separately, over 36 months or more, by market and by acquisition year.",
+              "note": "One side retained and not the other = partial. Older cohorts below newer ones are a question for the call.",
+              "requires_proof": true,
+              "claim_types": ["retention", "geo_share"]
+            },
+            {
+              "id": "M3",
+              "question": {"en": "Concentration of the top twenty sellers and the top twenty buyers, and its trend over 24 months?", "fr": "Concentration des vingt premiers vendeurs et des vingt premiers acheteurs, et sa tendance sur 24 mois ?"},
+              "found_if": "Share of GMV made by the top twenty sellers and by the top twenty buyers, separately, today and 24 months ago, confirmed against the GMV export.",
+              "note": "",
+              "requires_proof": true,
+              "claim_types": ["concentration"]
+            },
+            {
+              "id": "M4",
+              "question": {"en": "GMV retention by cohort vintage and by side?", "fr": "Rétention du GMV par millésime de cohorte et par côté ?"},
+              "found_if": "The share of each cohort's spend retained month after month, supply and demand separately, over 36 months or more, by acquisition year.",
+              "note": "From a16z's GMV retention note. Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["nrr", "retention"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "gmv_48m",
+            "name": {"en": "Monthly GMV by side over 48 months", "fr": "GMV mensuel par côté sur 48 mois"},
+            "requirement": {"en": "GMV, take rate, and active supply and demand counts, by market, month by month.", "fr": "GMV, take rate et nombre d'acteurs actifs côté offre et côté demande, par marché, mois par mois."},
+            "min_months": 48
+          }
+        ]
+      }
     }
   }
 }

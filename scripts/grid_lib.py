@@ -3,10 +3,13 @@
 
 Standard library only.
 
-    load_grid(path_or_stage)      -> dict. "preseed" / "seed" / "series_a" / "series_b" (and the
-                                     spellings in STAGES) resolve to scripts/grids/<stage>.json.
-    stage_key(stage)              -> "preseed" | "seed" | "series_a" | "series_b", from any
-                                     accepted spelling or from a grid's "stage" field.
+    load_grid(path_or_stage)      -> dict. "preseed" / "seed" / "series_a" / "series_b" /
+                                     "series_c" (and the spellings in STAGES) resolve to
+                                     scripts/grids/<stage>.json.
+    stage_key(stage)              -> "preseed" | "seed" | "series_a" | "series_b" | "series_c",
+                                     from any accepted spelling or from a grid's "stage" field.
+                                     Series C covers every later round: "series D", "growth
+                                     round" and the profiler's "series-c-or-later" route to it.
     model_key(profile)            -> the model whose block applies. The profile's model_type when
                                      a file scripts/grids/models/<model>.json exists, else "saas".
     load_model(model)             -> the model block (dict) or None.
@@ -34,8 +37,8 @@ A model block (scripts/grids/models/<model>.json) has, per stage, four verbs, ap
                                                 (grid["annex_gate"]["required_documents"]) taken
                                                 out by id, or appended with the same shape as the
                                                 grid entries. Only for a stage whose grid carries
-                                                a document list (series A, series B); an error
-                                                otherwise.
+                                                a document list (series A, series B, series C);
+                                                an error otherwise.
 The stage grid is never edited on disk; the pre-seed grid has no model section and is untouched.
 The document list is the same for every deck of one stage and one model: the model block
 adjusts it, the deck never does.
@@ -57,6 +60,14 @@ STAGES = {
     "série a": "series_a", "serie a": "series_a", "série-a": "series_a", "serie-a": "series_a",
     "series b": "series_b", "series-b": "series_b", "series_b": "series_b", "seriesb": "series_b",
     "série b": "series_b", "serie b": "series_b", "série-b": "series_b", "serie-b": "series_b",
+    # Series C covers the series C and every later round: D, E, F, growth rounds.
+    "series c": "series_c", "series-c": "series_c", "series_c": "series_c", "seriesc": "series_c",
+    "série c": "series_c", "serie c": "series_c", "série-c": "series_c", "serie-c": "series_c",
+    "series-c-or-later": "series_c",
+    "series d": "series_c", "series-d": "series_c", "série d": "series_c", "serie d": "series_c",
+    "series e": "series_c", "series-e": "series_c", "série e": "series_c", "serie e": "series_c",
+    "series f": "series_c", "series-f": "series_c", "série f": "series_c", "serie f": "series_c",
+    "growth round": "series_c", "growth-round": "series_c", "growth": "series_c",
 }
 
 

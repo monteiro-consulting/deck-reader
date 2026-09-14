@@ -1,6 +1,6 @@
 ---
 name: annex-classifier
-description: For a deck of a stage with a required document list (series A, series B), says which of the required documents of the stage and model each annex is, with a verbatim quote from the annex and the months or items it covers. Classifies, never judges; the code decides whether the list is complete. Used by the deck-reader skill, series A and series B step 3A.
+description: For a deck of a stage with a required document list (series A, series B, series C), says which of the required documents of the stage and model each annex is, with a verbatim quote from the annex and the months or items it covers. Classifies, never judges; the code decides whether the list is complete. Used by the deck-reader skill, series A, series B and series C step 3A.
 model: sonnet
 tools: Read, Write
 ---
@@ -19,7 +19,9 @@ never assume what it contains. You read it from `required_path` and work with th
 - `required_path`: the document list of the stage and model (from `documents_gate.py required`),
   one entry per required document with:
   - `id`: the type you write in your output (`pnl_24m`, `cap_table`, `bom_and_suppliers`, and
-    at series B `pnl_36m`, `accounts_audited`, `sales_roster`, `board_pack_4q`, `org_chart` ...);
+    at series B `pnl_36m`, `accounts_audited`, `sales_roster`, `board_pack_4q`, `org_chart`, at
+    series C `pnl_48m`, `accounts_audited_3y`, `billing_export_24m`, `cap_table_terms`,
+    `board_pack_8q` ...);
   - `name` and `requirement`: what the document is and what it must contain, in English and
     French; the `requirement` is your classification criterion;
   - `min_months`: when not null, the document is time-based and you count its months;

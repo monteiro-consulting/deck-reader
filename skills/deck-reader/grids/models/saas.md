@@ -3,7 +3,7 @@
 **Block version: 2026-09-14.** Readable copy of `scripts/grids/models/saas.json`.
 
 The default model. The stage grids are written for it: no question is added, removed or
-reweighted at seed, series A or series B. Only the benchmarks apply
+reweighted at seed, series A, series B or series C. Only the benchmarks apply
 (`scripts/grids/benchmarks/saas.json`), displayed next to the deck figures, never in the score.
 
 | Stage | Remove | Reweight | Add | Documents |
@@ -11,6 +11,7 @@ reweighted at seed, series A or series B. Only the benchmarks apply
 | Seed | none | none | none | none (no list at seed) |
 | Series A | none | none | none | base list, unchanged |
 | Series B | none | none | none | base list, unchanged |
+| Series C | none | none | none | base list, unchanged |
 
 ## Series A: documents (first gate)
 
@@ -19,6 +20,10 @@ The document list is the base one of the series A grid: monthly P&L over 24 mont
 ## Series B: documents (first gate)
 
 The document list is the base one of the series B grid: monthly P&L over 36 months, audited accounts for the last two fiscal years, cohorts by segment over 24 months, CRM export with weighted pipeline and win/loss, sales roster with quota attainment over 12 months, cap table, three-year financial model, contracts of the top 20 customers, board decks or minutes of the last four quarters, org chart and headcount history over 24 months. Nothing removed, nothing added.
+
+## Series C: documents (first gate)
+
+The document list is the base one of the series C grid: monthly P&L by product and by geography over 48 months, audited accounts with the auditor's opinion for the last three fiscal years, cohorts by segment and by acquisition year over 36 months, CRM export with weighted pipeline and win/loss, sales roster over 24 months, billing export with list and net price over 24 months, cap table with the terms of every round and any debt agreement, three-year financial model with a zero-burn scenario, contracts of the top 20 customers, board decks or minutes with budget vs actual for the last eight quarters, org chart and headcount history over 36 months. Nothing removed, nothing added.
 
 ## Benchmarks (displayed, never scored)
 
@@ -47,6 +52,16 @@ number above 1.0x in the top quartile (ICONIQ, 2025); NDR 110-120 % (ICONIQ, 202
 110 % (High Alpha, 2024); burn multiple bands and trajectory (Sacks, 2020-04-23); efficiency
 score (Bessemer, 2019-02-06). Quota attainment, rep ramp, win rate, series B round size: no
 dated source, left empty.
+
+Series C: ARR growth 60 % average at 50-100M and at 100M+ USD ARR (medians 60 and 57 %), net
+retention median 120 % at both, gross margin median 70 %, FCF margin medians -37 and -35 %
+(Bessemer, 2021-09-21); CAC payback around 20 months for private SaaS (CRV, 2026-07-16); Rule
+of 40 (Feld, 2015-02-03; ICONIQ, 2025); NDR 110-120 % (ICONIQ, 2025), public SaaS 110 % (High
+Alpha, 2024); magic number (Scale VP, 2010-04-20 and 2020-09-11); burn multiple bands and
+trajectory (Sacks, 2020-04-23). Growth and FCF margin above 50M USD ARR on the ICONIQ 2025 and
+High Alpha 2024 pages, plan attainment, discount trend, win rate trend, zero-burn growth, shares
+of ARR from second products and from abroad, series C round size, exit comparables: no dated
+source, left empty.
 
 ## Sources
 

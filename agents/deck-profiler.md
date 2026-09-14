@@ -56,8 +56,9 @@ Allowed values:
   "série A", "Series B", "série B", "amorçage", "pré-amorçage", "angel round", "friends and
   family" ... Map wording to the allowed values ("pré-amorçage", "angel round", "friends and
   family" are `pre-seed`; "amorçage" alone is `seed`; "series A", "série A" are `series-a`;
-  "series B", "série B" are `series-b`; "series C", "série C", "growth round" and later are
-  `series-c-or-later`). If no page states a stage, write `not_stated`. Never infer a stage from
+  "series B", "série B" are `series-b`; "series C", "série C", "series D", "série D", "growth
+  round" and every later round are `series-c-or-later`, which the scripts read with the series C
+  grid). If no page states a stage, write `not_stated`. Never infer a stage from
   the amount raised, the traction, or the tone.
 - `model_type` follows what the deck says about how money is made. A commission or take rate on
   transactions between two sides is `marketplace`. A subscription to software sold to companies

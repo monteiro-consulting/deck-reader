@@ -16,7 +16,8 @@ annexes, and the figure it found there. This script:
     - a "contradicted" without figures on both sides is blatant (a fact that is not there);
     - a claim with no match, or an invalid match after --finalize, is not_covered.
 
-Output: the claims file with annex_status, annex_evidence, annex_value, gap_class, gap_ratio.
+Output: the claims file with annex_status, annex_evidence, annex_value, gap_class, gap_ratio,
+and, when the matcher gives them (plan vs actual claims), plan_value and actual_value.
 Invalid matches are listed in --invalid; exit 1 unless --finalize.
 """
 import argparse
@@ -93,6 +94,11 @@ def verify(claims_doc, matches_doc, annexes_doc, grid):
         out["annex_evidence"] = list(m.get("evidence") or [])
         out["annex_value"] = found_value
         out["annex_note"] = m.get("note", "")
+        # A plan vs actual claim (series C) carries both figures: the plan read in the board pack
+        # and the actual read in the P&L. Kept as numbers for the report table; never scored.
+        for key in ("plan_value", "actual_value"):
+            if m.get(key) is not None:
+                out[key] = to_number(m.get(key))
         gap_class, ratio = classify_gap(c.get("value"), found_value, grid)
         out["gap_class"] = gap_class
         out["gap_ratio"] = ratio

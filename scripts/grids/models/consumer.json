@@ -138,6 +138,57 @@
           }
         ]
       }
+    },
+    "series_c": {
+      "remove": ["B2", "C5", "D3", "D6"],
+      "reweight": {
+        "blocks": {},
+        "questions": {
+          "B1": 1
+        }
+      },
+      "add": [
+        {
+          "block": "B",
+          "questions": [
+            {
+              "id": "N1",
+              "question": {"en": "Daily active users over monthly active users, over 48 months?", "fr": "DAU sur MAU, sur 48 mois ?"},
+              "found_if": "Both counts with the definition of 'active', and the monthly ratio over 48 months, from an analytics export.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N2",
+              "question": {"en": "Do the cohort curves flatten, and do older cohorts hold next to newer ones?", "fr": "Les cohortes s'aplatissent-elles, et les cohortes anciennes tiennent-elles à côté des récentes ?"},
+              "found_if": "Day 1, 7 and 30 retention by monthly cohort over 36 months or more, with the day where the curves flatten, and the cohorts of each acquisition year side by side.",
+              "note": "A curve that still falls at day 30 = partial. Older cohorts below newer ones are a question for the call.",
+              "requires_proof": true,
+              "claim_types": ["retention"]
+            },
+            {
+              "id": "N3",
+              "question": {"en": "What share of new users is organic, and what is the paid CAC by country over 24 months?", "fr": "Quelle part des nouveaux utilisateurs est organique, et quel est le CAC payant par pays sur 24 mois ?"},
+              "found_if": "The share of new users from organic, referral or word of mouth, and the cost per paid user by country, month by month over 24 months, with the method.",
+              "note": "All paid = partial.",
+              "requires_proof": true,
+              "claim_types": ["acquisition", "geo_share"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "remove": ["crm_pipeline", "sales_roster", "top20_contracts"],
+        "add": [
+          {
+            "id": "product_analytics_36m",
+            "name": {"en": "Product analytics export over 36 months", "fr": "Export d'analytics produit sur 36 mois"},
+            "requirement": {"en": "Monthly and daily active users, DAU over MAU, retention by acquisition cohort, organic share of new users and paid CAC by country, month by month, from the analytics tool.", "fr": "Utilisateurs actifs mensuels et quotidiens, DAU sur MAU, rétention par cohorte d'acquisition, part organique des nouveaux utilisateurs et CAC payant par pays, mois par mois, depuis l'outil d'analytics."},
+            "min_months": 36
+          }
+        ]
+      }
     }
   }
 }

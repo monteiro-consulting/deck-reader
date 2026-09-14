@@ -12,6 +12,7 @@ risk. They form the model's own block, weight 2.
 | Seed | none | none | block Q (weight 2): Q1 to Q3 | none (no list at seed) |
 | Series A | none | none | block Q (weight 2): Q1 to Q3 | add licence, risk_book_24m |
 | Series B | none | none | block Q (weight 2): Q1 to Q4 | add licence, risk_book_36m |
+| Series C | none | none | block Q (weight 2): Q1 to Q4 | add licence, risk_book_48m |
 
 ## Seed: block Q. Licence and risk, weight 2 (brought by the model)
 
@@ -56,6 +57,24 @@ The document list of the first gate is the one of the stage grid (`scripts/grids
 
 The document list of the first gate is the one of the stage grid (`scripts/grids/series_b.json`) with the changes above; the deck never adjusts it.
 
+## Series C: block Q. Licence and risk, weight 2 (brought by the model)
+
+| # | Question | Found if | Note |
+|---|---|---|---|
+| Q1 | Which licences or agreements, held directly or through a partner, in each country served, since when? | The licence or the regulated partner named for each country in the P&L by geography, the regulator, and the date obtained; the licences or the partner contracts in the annexes | *proof*. A country served without its licence or partner = partial |
+| Q2 | What does compliance cost, confirmed against the P&L and three years of audited accounts? | A monthly compliance cost (people, tools, audits) as a share of expenses, and the same lines in the P&L and in each of the last three fiscal years of audited accounts | *proof*. Benchmark shown next to the figure |
+| Q3 | Credit or fraud risk: how is it underwritten and measured? | The underwriting or fraud rules, the denominator and the method of the loss rate, and who bears the loss (the company, a partner, an insurer) | *proof*. A 'low' risk without a method = absent |
+| Q4 | Losses on the book over 48 months, by vintage? | Losses, defaults, fraud and chargebacks month by month over 48 months, by vintage, from the risk book | *proof*. A single annual loss rate = partial. Older vintages worse than newer ones are a question for the call |
+
+## Series C: documents (first gate)
+
+| Id | Document | Requirement | Minimum |
+|---|---|---|---|
+| licence | Licences, agreements or regulator correspondence | The licence or agreement held in each country served, or the regulator's correspondence on the application, and the compliance cost lines of the P&L. | — |
+| risk_book_48m | Risk book over 48 months | Loan, transaction or policy book with losses, defaults, fraud and chargebacks, by vintage, month by month. | 48 months |
+
+The document list of the first gate is the one of the stage grid (`scripts/grids/series_c.json`) with the changes above; the deck never adjusts it.
+
 ## Benchmarks (displayed, never scored)
 
 Seed-stage fintech median net burn 120,000 USD per month, roughly 42 % above SaaS peers,
@@ -65,6 +84,9 @@ Credit or fraud loss rate, and compliance cost as a share of expenses at series 
 source, left empty. Series B: the compliance fines figure (Qubit, 2025-12-11) is shown again;
 compliance cost as a share of expenses and losses on the book have no dated source and stay
 empty.
+
+Series C: the compliance fines figure (Qubit, 2025-12-11) is shown again; compliance cost as a
+share of expenses and losses on the book have no dated source and stay empty.
 
 ## Sources
 

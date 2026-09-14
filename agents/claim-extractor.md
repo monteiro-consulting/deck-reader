@@ -1,6 +1,6 @@
 ---
 name: claim-extractor
-description: Lists every verifiable statement a SEED, SERIES A or SERIES B deck makes - figures, named customers, competitors, founder track records, past funding, "why now", at series A NRR, pipeline, sales cycle, gross margin, concentration, burn multiple, founder-led sales, key hires, job posts, reviews, and at series B Rule of 40, magic number, quota attainment, rep ramp, second engine, executive team and departures, headcount, board, breakeven, audited figures, win rate, secondary or debt, expansion - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3S and series A and series B step 4A.
+description: Lists every verifiable statement a SEED, SERIES A or SERIES B deck makes - figures, named customers, competitors, founder track records, past funding, "why now", at series A NRR, pipeline, sales cycle, gross margin, concentration, burn multiple, founder-led sales, key hires, job posts, reviews, and at series B Rule of 40, magic number, quota attainment, rep ramp, second engine, executive team and departures, headcount, board, breakeven, audited figures, win rate, secondary or debt, expansion, and at series C plan against actual, net price, discounts, free cash flow margin, zero-burn growth, product and geographic shares, liquidation preferences, debt terms, audit opinion, controls certification, competitor funding, exit comparables - each with page, verbatim quote, type and numeric value. Extracts, never judges. Used by the deck-reader skill, seed step 3S and series A, series B and series C step 4A.
 model: sonnet
 tools: Read, Write
 ---
@@ -37,7 +37,14 @@ A statement that a document or a public source could confirm or contradict:
   opened after the series A, with its ARR, start date or economics), an executive named with a
   role, an executive departure, a headcount or attrition figure, the board's composition or
   cadence, a breakeven month, a figure attributed to audited accounts, a win rate against a
-  competitor, a secondary sale or a debt line, a subsidiary or office opened.
+  competitor, a secondary sale or a debt line, a subsidiary or office opened;
+- at series C (the types file says which types exist): a planned or budgeted figure next to the
+  actual of a quarter or a year (one claim per metric and quarter), a goal of the series B and
+  what was reached, a net price against a list price, a discount rate, a free cash flow margin,
+  the growth of a zero-burn scenario, the share of ARR of a product after the first or of the
+  countries outside the home one, a liquidation preference, a participation or a ratchet, a debt
+  term, an audit opinion, a SOC 2 or ISO 27001 certification, a round raised by a competitor, a
+  named acquirer or a listed comparable.
 
 Not a claim: an intention ("we will hire"), an opinion ("the market is huge"), a product
 description without a checkable fact, the ask itself ("we are raising 1.5M").
@@ -82,6 +89,11 @@ Write `output_path` with exactly this shape, one entry per claim, in page order:
 - `value`: the main figure as a plain number (12100, not "12.1k"), or `null` when there is none.
   Percentages as numbers (35 for 35 %). Amounts in the deck's currency unit.
 - `unit`, `date`: as written, or empty.
+- `metric` and `period`, for a `plan_vs_actual` claim only: `metric` is one of `arr`,
+  `net_new_arr`, `net_burn`, `headcount` (a plan of another metric keeps the type and no
+  `metric`), `period` is the quarter as `YYYY-Qn`. `value` is the actual the deck states, or the
+  plan when the deck states only the plan. No arithmetic: a gap the deck does not print is not
+  computed.
 
 ## Rules
 

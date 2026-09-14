@@ -72,10 +72,12 @@ class RoutingTest(unittest.TestCase):
             self.assertEqual(grid_lib.load_grid(s)["stage"], "series-b", s)
         self.assertEqual(grid_lib.stage_key(GRID), "series_b")
         self.assertEqual(grid_lib.stage_key("series A"), "series_a")
-        with self.assertRaises(grid_lib.GridError):
-            grid_lib.stage_key("series C")
-        with self.assertRaises(grid_lib.GridError):
-            grid_lib.stage_key("série C")
+        # Series C and every later round have their own grid now; a stage the deck does not state has none.
+        self.assertEqual(grid_lib.stage_key("series C"), "series_c")
+        self.assertEqual(grid_lib.stage_key("série C"), "series_c")
+        for s in ("other", "not_stated", "bridge"):
+            with self.assertRaises(grid_lib.GridError):
+                grid_lib.stage_key(s)
 
     def test_grid_shape_matches_seed_schema(self):
         seed = grid_lib.load_grid("seed")

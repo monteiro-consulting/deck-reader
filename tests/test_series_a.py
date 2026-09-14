@@ -62,8 +62,9 @@ class RoutingTest(unittest.TestCase):
             self.assertEqual(grid_lib.load_grid(s)["stage"], "series-a", s)
         self.assertEqual(grid_lib.stage_key(GRID), "series_a")
         self.assertEqual(grid_lib.stage_key("pre-seed"), "preseed")
+        self.assertEqual(grid_lib.stage_key("series C"), "series_c")  # series C now has its grid
         with self.assertRaises(grid_lib.GridError):
-            grid_lib.stage_key("series C")
+            grid_lib.stage_key("not_stated")
 
     def test_grid_shape_matches_seed_schema(self):
         seed = grid_lib.load_grid("seed")

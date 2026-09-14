@@ -12,6 +12,7 @@ minimum order quantities. The economics block counts double.
 | Seed | none | block C to weight 6 | P1 to P3 in block C | none (no list at seed) |
 | Series A | none | block C to weight 6 | P1 to P3 in block C | add bom_and_suppliers |
 | Series B | none | block C to weight 6 | P1 to P3 in block C | add bom_and_suppliers, inventory_24m |
+| Series C | none | block C to weight 6 | P1 to P3 in block C | add bom_and_suppliers, inventory_36m |
 
 ## Seed: added to block C (weight 6)
 
@@ -54,6 +55,23 @@ The document list of the first gate is the one of the stage grid (`scripts/grids
 
 The document list of the first gate is the one of the stage grid (`scripts/grids/series_b.json`) with the changes above; the deck never adjusts it.
 
+## Series C: added to block C (weight 6)
+
+| # | Question | Found if | Note |
+|---|---|---|---|
+| P1 | Gross margin at 1,000, 10,000 and 100,000 units, and the margin realized in three years of audited accounts? | A margin per unit at each of the three volumes, and the realized margin of each of the last three fiscal years in the audited accounts | *proof*. A single margin figure without volume = partial |
+| P2 | Bill of materials with the cost per unit, and its curve over 48 months? | The main components with their unit cost, the total landed cost per unit, and its curve over 48 months | *proof*. A total without the lines = partial |
+| P3 | Minimum order quantities, supplier terms, inventory and warranty over 36 months? | The MOQ of the critical components or of the contract manufacturer, the payment terms, the inventory month by month, and the warranty claims and returns by month over 36 months | *proof*. Inventory or warranty missing = partial |
+
+## Series C: documents (first gate)
+
+| Id | Document | Requirement | Minimum |
+|---|---|---|---|
+| bom_and_suppliers | Bill of materials and supplier terms | The BOM with the unit cost per component and the landed cost per unit, and the supplier contracts or quotes with minimum order quantities and payment terms. | — |
+| inventory_36m | Inventory, warranty claims and returns over 36 months | Inventory, warranty claims and returns, month by month. | 36 months |
+
+The document list of the first gate is the one of the stage grid (`scripts/grids/series_c.json`) with the changes above; the deck never adjusts it.
+
 ## Benchmarks (displayed, never scored)
 
 Public comparables only: Cisco about 65 %, Garmin about 58 %, Sonos mid-40s, Apple hardware
@@ -62,6 +80,9 @@ model should show 1,000 versus 10,000 versus 100,000 units (SeriesOps, 2026-01-1
 of price and typical MOQs: no dated source, left empty. The stage-generic benchmarks of the SaaS
 file (burn multiple, runway, round size) are shown as well. Series B: the same SeriesOps
 comparables, whose note that margins become critical at series B is the point; BOM, MOQ,
+inventory months and warranty rates have no dated source and stay empty.
+
+Series C: the same SeriesOps public comparables and volume tiers (2026-01-17); BOM, MOQ,
 inventory months and warranty rates have no dated source and stay empty.
 
 ## Sources

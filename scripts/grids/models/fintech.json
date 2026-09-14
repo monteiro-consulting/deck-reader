@@ -155,6 +155,72 @@
           }
         ]
       }
+    },
+    "series_c": {
+      "remove": [],
+      "reweight": {
+        "blocks": {},
+        "questions": {}
+      },
+      "add": [
+        {
+          "block": {
+            "id": "Q",
+            "name": {"en": "Licence and risk", "fr": "Licence et risque"},
+            "weight": 2
+          },
+          "questions": [
+            {
+              "id": "Q1",
+              "question": {"en": "Which licences or agreements, held directly or through a partner, in each country served, since when?", "fr": "Quelles licences ou quels agréments, détenus en direct ou via un partenaire, dans chaque pays servi, depuis quand ?"},
+              "found_if": "The licence or the regulated partner named for each country in the P&L by geography, the regulator, and the date obtained; the licences or the partner contracts in the annexes.",
+              "note": "A country served without its licence or partner = partial.",
+              "requires_proof": true,
+              "claim_types": ["why_now", "expansion", "other"]
+            },
+            {
+              "id": "Q2",
+              "question": {"en": "What does compliance cost, confirmed against the P&L and three years of audited accounts?", "fr": "Combien coûte la conformité, confirmé contre le P&L et trois exercices audités ?"},
+              "found_if": "A monthly compliance cost (people, tools, audits) as a share of expenses, and the same lines in the P&L and in each of the last three fiscal years of audited accounts.",
+              "note": "Benchmark shown next to the figure, never in the score.",
+              "requires_proof": true,
+              "claim_types": ["runway", "gross_margin", "audited_figure"]
+            },
+            {
+              "id": "Q3",
+              "question": {"en": "Credit or fraud risk: how is it underwritten and measured?", "fr": "Risque de crédit ou de fraude : comment est-il souscrit et mesuré ?"},
+              "found_if": "The underwriting or fraud rules, the denominator and the method of the loss rate, and who bears the loss (the company, a partner, an insurer).",
+              "note": "A 'low' risk without a method = absent.",
+              "requires_proof": true,
+              "claim_types": ["churn", "other"]
+            },
+            {
+              "id": "Q4",
+              "question": {"en": "Losses on the book over 48 months, by vintage?", "fr": "Pertes sur le livre sur 48 mois, par millésime ?"},
+              "found_if": "Losses, defaults, fraud and chargebacks month by month over 48 months, by vintage, from the risk book.",
+              "note": "A single annual loss rate = partial. Older vintages worse than newer ones are a question for the call.",
+              "requires_proof": true,
+              "claim_types": ["churn"]
+            }
+          ]
+        }
+      ],
+      "documents": {
+        "add": [
+          {
+            "id": "licence",
+            "name": {"en": "Licences, agreements or regulator correspondence", "fr": "Licences, agréments ou correspondance avec le régulateur"},
+            "requirement": {"en": "The licence or agreement held in each country served, or the regulator's correspondence on the application, and the compliance cost lines of the P&L.", "fr": "La licence ou l'agrément détenu dans chaque pays servi, ou la correspondance du régulateur sur la demande, et les lignes de coût de conformité du P&L."},
+            "min_months": null
+          },
+          {
+            "id": "risk_book_48m",
+            "name": {"en": "Risk book over 48 months", "fr": "Livre de risque sur 48 mois"},
+            "requirement": {"en": "Loan, transaction or policy book with losses, defaults, fraud and chargebacks, by vintage, month by month.", "fr": "Livre des prêts, des transactions ou des polices avec les pertes, les défauts, la fraude et les rétrofacturations, par millésime, mois par mois."},
+            "min_months": 48
+          }
+        ]
+      }
     }
   }
 }
