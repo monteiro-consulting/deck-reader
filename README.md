@@ -105,9 +105,11 @@ python scripts/render_grid.py series_d saas
 python scripts/render_grid.py seed marketplace --lang fr --out seed-marketplace.md
 ```
 
-The plugin itself is in English. The report is written in the user's language (labels shipped
-for English and French; other languages get English labels and prose in the user's language).
-Quotes from the deck and the annexes are never translated.
+The plugin and all repository-facing material are in English. The report is written in the
+user's configured default language unless the user explicitly requests another language. If no
+default is available, the current request language is used. Labels ship for English and French;
+other languages get English labels and prose in the selected report language. Quotes from the
+deck and the annexes are never translated.
 
 ## How it works
 

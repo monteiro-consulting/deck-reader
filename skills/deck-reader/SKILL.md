@@ -1,8 +1,6 @@
 ---
 name: deck-reader
 description: Use when the user runs /deck-reader with a path to a pitch deck PDF (and, at seed, series A, series B, series C and series D, the annexes the founder sent) and wants the deck-completeness report written next to it. One grid per stage (pre-seed, seed, series A, series B, series C, series D and every later round), one block per business model; the deck's announced stage picks the grid, the detected model picks the block. Never a verdict.
-argument-hint: path/to/deck.pdf [--annex file ...] [--keep-work]
-disable-model-invocation: true
 ---
 
 # Deck reader
@@ -17,6 +15,15 @@ Scripts live in `${CLAUDE_PLUGIN_ROOT}/scripts/`. Agents are the plugin's own
 `scripts/grids/models/`, the benchmarks in `scripts/grids/benchmarks/`. Every script applies the
 model block itself from `profile.json`; you never edit a grid.
 
+## Runtime adapter
+
+- In Claude Code, use `${CLAUDE_PLUGIN_ROOT}` and the `deck-reader:<agent-name>` agents as written.
+- In Codex, derive `PLUGIN_ROOT` by taking two parent directories from this `SKILL.md`. Substitute
+  that absolute path for every `${CLAUDE_PLUGIN_ROOT}` occurrence below. Whenever a step says to
+  launch `deck-reader:<agent-name>`, spawn an isolated subagent and instruct it to read
+  `PLUGIN_ROOT/agents/<agent-name>.md` completely before executing the listed inputs. Keep the
+  orchestration and all deterministic decisions in the root task.
+
 ## 0. Setup
 
 1. `DECK` = the first `.pdf` path in `$ARGUMENTS`. `ANNEXES` = every path given after `--annex`
@@ -24,9 +31,11 @@ model block itself from `profile.json`; you never edit a grid.
    An annex that does not exist: say so and stop.
 2. `WORK` = a fresh temporary directory:
    `python -c "import tempfile;print(tempfile.mkdtemp(prefix='deck-reader-'))"`.
-3. `LANG` = the language for the report: the language the user writes in, or the default
-   language set by their instructions, else `en`. ISO 639-1 code. Labels exist for `en` and `fr`;
-   any other code gets English labels and the writers' prose in `LANG`.
+3. `LANG` = the language for the report: an explicit report-language request first, otherwise
+   the user's configured default language, otherwise the language of the current request, else
+   `en`. ISO 639-1 code. Labels exist for `en` and `fr`; any other code gets English labels and
+   the writers' prose in `LANG`. Keep all repository-facing instructions, schemas, filenames,
+   interface copy and documentation in English. Never translate deck or annex quotations.
 4. `OUT` = `<same folder as DECK>/<deck file name without .pdf>.reading.md`. `report.py` also
    writes the same reading as `<...>.reading.pdf` next to it (`--no-pdf` to skip).
    `EMAIL` = `<same folder as DECK>/<deck file name without .pdf>.founder-email.md`.

@@ -1,0 +1,29 @@
+{
+  "name": "deck-reader",
+  "version": "0.4.1",
+  "description": "Reads startup pitch decks with a stage-specific completeness grid, verifies supported claims, and prepares sourced investor-call questions without giving an investment verdict.",
+  "author": {
+    "name": "Valentin Monteiro",
+    "email": "valentin@monteiro.consulting",
+    "url": "https://github.com/monteiro-consulting"
+  },
+  "homepage": "https://github.com/monteiro-consulting/deck-reader",
+  "repository": "https://github.com/monteiro-consulting/deck-reader",
+  "keywords": [
+    "pitch-deck",
+    "startup",
+    "investor",
+    "due-diligence",
+    "deck-completeness"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Deck Reader",
+    "shortDescription": "Sourced pitch-deck analysis by funding stage",
+    "longDescription": "Analyze a startup pitch deck with the grid for its announced funding stage, verify claims against supplied annexes and permitted public sources, and prepare sourced questions for the investor call. Deck Reader never gives an investment verdict.",
+    "developerName": "Valentin Monteiro",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use $deck-reader to analyze this pitch deck and prepare the investor call."
+  }
+}

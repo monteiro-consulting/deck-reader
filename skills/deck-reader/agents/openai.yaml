@@ -1,0 +1,7 @@
+interface:
+  display_name: "Deck Reader"
+  short_description: "Sourced pitch-deck analysis by funding stage"
+  default_prompt: "Use $deck-reader to analyze this pitch deck and prepare the investor call."
+
+policy:
+  allow_implicit_invocation: true
